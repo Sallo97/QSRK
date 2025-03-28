@@ -34,6 +34,10 @@ fun executeScript(source: String) {
             }
 
         } while (nextVal != -1)
+
+        // Check existStatus
+        println("---EXITING...---")
+        println("process ${processScript.pid()} with exit status ${processScript.exitValue()}")
     } catch (ioExc: IOException) {
         val missingCompilerRegex = Regex("Cannot run program \"\\w+\": error=\\d+, No such file or directory")
         if (ioExc.message != null && missingCompilerRegex.matches(ioExc.message!!))
