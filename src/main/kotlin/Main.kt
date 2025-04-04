@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -18,13 +22,38 @@ import kotlinx.coroutines.*
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.*
 
+/**
+ * The possible type of status of a script.
+ */
+enum class StatusT {SUCCESS, FAIL, RUNNING, NOTHING;
+
+companion object{
+    /**
+     * Given the [exitStatus] of a script returns the associated StatusT.
+     */
+    fun fromExitStatus(exitStatus: Int): StatusT = if(exitStatus == 0) SUCCESS else FAIL
+
+    /**
+     * Given a [statusT] returns the associated icon (as of now it is just a text)
+     */
+    fun toIcon(statusT: StatusT) : ImageVector =
+        when(statusT) {
+            SUCCESS -> Icons.Filled.Check
+            FAIL -> Icons.Filled.Warning
+            RUNNING -> Icons.Filled.Refresh
+            NOTHING -> Icons.Filled.Star
+        }
+    }
+}
+
 @Composable
 @Preview
 fun App() {
 
     MaterialTheme {
         var script by remember { mutableStateOf("Write your script here!") }
-        var output = remember { mutableStateOf("The output of you script will be printed here!") }
+        val output = remember { mutableStateOf("The output of you script will be printed here!") }
+        val statusIcon = remember { mutableStateOf(StatusT.toIcon(StatusT.NOTHING)) }
 
         BoxWithConstraints {
             val windowHeight = maxHeight
@@ -76,7 +105,7 @@ fun App() {
                     val play = Button(
                         onClick = {
                             scope.launch (Dispatchers.IO){
-                                executeScript(output, script)
+                                executeScript(output, script, statusIcon)
                             }
                         },
                         content = {
@@ -100,8 +129,8 @@ fun App() {
                     Spacer(Modifier.height(10.dp))
 
                     val status = Icon(
-                        imageVector = Icons.Filled.CheckCircle,
-                        contentDescription = "Status Icon",
+                        imageVector = statusIcon.value,
+                        contentDescription = "status Icon",
                         modifier = Modifier
                             .size(width = 100.dp, height = 100.dp)
                     )
@@ -112,7 +141,11 @@ fun App() {
     }
 }
 
-fun executeScript(output: MutableState<String>, body: String) {
+/**
+ * executes the [body] as a Kotlin script, updating the [output] Text Label
+ * accordingly.
+ */
+private fun executeScript(output: MutableState<String>, body: String, statusIcon: MutableState<ImageVector>) {
     output.value = "Starting executing script..."
 
     // Save the content of body in the file tempScript.kts
@@ -125,10 +158,14 @@ fun executeScript(output: MutableState<String>, body: String) {
     tempFile.toFile().deleteOnExit()
     tempFile.writeText(text = body)
 
-    // create a process for said file and prints its execution in the terminal
-    executeSource(source = tempFile.toString(), content = output)
+    // TODO sett the status icon to "RUNNING"
+    statusIcon.value = StatusT.toIcon(StatusT.RUNNING)
 
+    // Create a process for said file and prints its execution in the terminal
+    val exitStatus = executeSource(source = tempFile.toString(), content = output)
 
+    // Update the icon accordingly to the exit status
+    statusIcon.value = StatusT.toIcon(StatusT.fromExitStatus(exitStatus))
 }
 
 
