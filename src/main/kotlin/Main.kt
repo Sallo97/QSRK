@@ -14,9 +14,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.*
 
@@ -31,6 +29,7 @@ fun App() {
         BoxWithConstraints {
             val windowHeight = maxHeight
             val windowWidth = maxWidth
+            val scope = rememberCoroutineScope()
 
             Row {
                 Spacer(Modifier.width(10.dp))
@@ -76,7 +75,9 @@ fun App() {
 
                     val play = Button(
                         onClick = {
-                            executeScript(output, script)
+                            scope.launch (Dispatchers.IO){
+                                executeScript(output, script)
+                            }
                         },
                         content = {
                             Text("PLAY SCRIPT")
@@ -125,8 +126,8 @@ fun executeScript(output: MutableState<String>, body: String) {
     tempFile.writeText(text = body)
 
     // create a process for said file and prints its execution in the terminal
-    val scope = rememberCoroutineScope()
     executeSource(source = tempFile.toString(), content = output)
+
 
 }
 
