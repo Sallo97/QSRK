@@ -14,9 +14,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import java.nio.file.attribute.FileAttribute
-import java.nio.file.attribute.PosixFilePermission
+import kotlinx.coroutines.withContext
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.*
 
@@ -47,7 +47,7 @@ fun App() {
                                 brush = SolidColor(Color.DarkGray),
                                 shape = RectangleShape
                             )
-                            .fillMaxWidth(0.8f)
+                            .fillMaxWidth(0.85f)
                             .fillMaxHeight(0.8f)
                     )
 
@@ -64,21 +64,19 @@ fun App() {
                                 brush = SolidColor(Color.DarkGray),
                                 shape = RectangleShape
                             )
-                            .fillMaxWidth(0.8f)
+                            .fillMaxWidth(0.85f)
                             .fillMaxHeight(0.8f)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(10.dp))
 
                 Column {
                     Spacer(Modifier.height(10.dp))
 
                     val play = Button(
                         onClick = {
-                            runBlocking {
-                                executeScript(output, script)
-                            }
+                            executeScript(output, script)
                         },
                         content = {
                             Text("PLAY SCRIPT")
@@ -113,13 +111,32 @@ fun App() {
     }
 }
 
-suspend fun executeScript(output: MutableState<String>, body: String) {
-    TODO("the programmer is taking a nap! Hold on Programmer!")
+fun executeScript(output: MutableState<String>, body: String) {
+    output.value = "Starting executing script..."
+
+    // Save the content of body in the file tempScript.kts
+    val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
+    val tempFile = createTempFile(
+        prefix = "tempScript",
+        suffix = ".kts",
+        PosixFilePermissions.asFileAttribute(permissions)
+    )
+    tempFile.toFile().deleteOnExit()
+    tempFile.writeText(text = body)
+
+    // create a process for said file and prints its execution in the terminal
+    val scope = rememberCoroutineScope()
+    executeSource(source = tempFile.toString(), content = output)
 
 }
 
-fun main() = application {
-    Window(title = "QSRK!", onCloseRequest = ::exitApplication) {
-        App()
+
+fun main() = runBlocking {
+    application {
+
+        Window(title = "QSRK!", onCloseRequest = ::exitApplication) {
+            App()
+        }
     }
 }
+
