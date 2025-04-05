@@ -9,7 +9,9 @@ import java.io.IOException
 /**
  * Describes the type of line, that is if it is an error, exception or a normal line.
  */
-enum class LineType { ERROR, EXCEPTION, MISSING;
+enum class LineType {
+    ERROR, EXCEPTION, MISSING;
+
     companion object {
         private val ERROR_REGEX = Regex("(\\w*/*)*\\w+\\.kts:\\d+:\\d+: error: .*([\\n\\r])*")
         private val EXCEPTION_REGEX = Regex("java\\.lang\\..+: .+([\\n\\r])*")
@@ -18,7 +20,7 @@ enum class LineType { ERROR, EXCEPTION, MISSING;
         /**
          * Returns the LineT type associated to [line]
          */
-        fun parseLine(line : String?) : LineType? {
+        fun parseLine(line: String?): LineType? {
             return line?.let {
                 when {
                     ERROR_REGEX.matches(line) -> ERROR
@@ -34,13 +36,19 @@ enum class LineType { ERROR, EXCEPTION, MISSING;
 /**
  * Handles the execution of the Kotlin's script pointed by [source].
  */
-fun executeSource(source: String, content: MutableState<String>) : Int {
+fun executeSource(
+    source: String, content: MutableState<String>,
+    currentProcess: MutableState<Process?>
+): Int {
+
     // Initialising process
     try {
         val script = ProcessBuilder("kotlinc", "-script", source)
             .redirectErrorStream(true)
             .redirectInput(ProcessBuilder.Redirect.INHERIT)
             .start()
+
+        currentProcess.value = script
 
         // Reading the output stream
         script.inputReader().use { outReader ->
@@ -65,7 +73,7 @@ fun executeSource(source: String, content: MutableState<String>) : Int {
         return script.waitFor()
 
     } catch (ioExc: IOException) {
-        if (LineType.parseLine(ioExc.message)  == LineType.MISSING)
+        if (LineType.parseLine(ioExc.message) == LineType.MISSING)
             println("Your system misses the Kotlin compiler, please be sure that you installed kotlinc")
         else System.err.println("IOException: ${ioExc.message}\n script has been aborted.")
         return -1 //TODO maybe find a more fitting status than -1
