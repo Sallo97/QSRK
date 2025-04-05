@@ -8,10 +8,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,7 +37,7 @@ data class ScriptStatus(val statusType: StatusType = StatusType.WAITING) {
      * WAITING -> No script has been started (this status happens only at the start of the program)
      */
     enum class StatusType {
-        SUCCESS, FAIL, RUNNING, WAITING;
+        SUCCESS, FAIL, RUNNING, WAITING, ABORTED;
     }
 
     companion object {
@@ -48,7 +45,12 @@ data class ScriptStatus(val statusType: StatusType = StatusType.WAITING) {
          * Given the [exitStatus] of a terminated script, returns the associated StatusT.
          */
         fun fromExitStatus(exitStatus: Int): ScriptStatus {
-            val statusType = if (exitStatus == 0) StatusType.SUCCESS else StatusType.FAIL
+            val statusType =
+                when (exitStatus){
+                    0 -> StatusType.SUCCESS
+                    137 -> StatusType.ABORTED
+                    else -> StatusType.FAIL
+                }
             return ScriptStatus(statusType)
         }
 
@@ -61,6 +63,7 @@ data class ScriptStatus(val statusType: StatusType = StatusType.WAITING) {
                 StatusType.FAIL -> Icons.Filled.Warning
                 StatusType.RUNNING -> Icons.Filled.Refresh
                 StatusType.WAITING -> Icons.Filled.Star
+                StatusType.ABORTED -> Icons.Filled.Info
             }
     }
 }
@@ -127,9 +130,10 @@ fun App() {
 
                     // PlayButton
                     Button(
+                        enabled = status.value.statusType != ScriptStatus.StatusType.RUNNING,
                         onClick = {
                             scope.launch(Dispatchers.IO) {
-                                executeSource(output, script, status, currentProcess)
+                                scriptExecution(output, script, status, currentProcess)
                             }
                         },
                         content = {
@@ -183,42 +187,39 @@ fun App() {
 /**
  * Aborts the [currentProcess] if it exists.
  */
-fun terminateProcess(currentProcess: MutableState<Process?>) = currentProcess.value?.destroyForcibly()
+private fun terminateProcess(currentProcess: MutableState<Process?>) = currentProcess.value?.destroyForcibly()
 
 /**
  * executes the [body] as a Kotlin script, updating the [output] Text Label
  * accordingly.
  */
-private fun executeSource(
+private fun scriptExecution(
     output: MutableState<String>,
     body: String,
     status: MutableState<ScriptStatus>,
     currentProcess: MutableState<Process?>
 ) {
-    if (status.value.statusType != ScriptStatus.StatusType.RUNNING) {
+    output.value = ""
 
-        output.value = ""
+    // Save the content of body in the file tempScript.kts
+    val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
+    val tempFile = createTempFile(
+        prefix = "tempScript",
+        suffix = ".kts",
+        PosixFilePermissions.asFileAttribute(permissions)
+    )
+    tempFile.toFile().deleteOnExit()
+    tempFile.writeText(text = body)
 
-        // Save the content of body in the file tempScript.kts
-        val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
-        val tempFile = createTempFile(
-            prefix = "tempScript",
-            suffix = ".kts",
-            PosixFilePermissions.asFileAttribute(permissions)
-        )
-        tempFile.toFile().deleteOnExit()
-        tempFile.writeText(text = body)
+    status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
 
-        status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
+    // Create a process for said file and prints its execution in the terminal
+    val exitStatus = executeSource(source = tempFile.toString(), content = output, currentProcess)
 
-        // Create a process for said file and prints its execution in the terminal
-        val exitStatus = executeSource(source = tempFile.toString(), content = output, currentProcess)
-
-        // TODO update the content to print that the process terminated and its exitStatus
-        // Update the icon accordingly to the exit status
-        status.value = ScriptStatus.fromExitStatus(exitStatus)
-        currentProcess.value = null
-    }
+    // General updates after process termination
+    output.value += "\nScript terminated with exit status: $exitStatus"
+    status.value = ScriptStatus.fromExitStatus(exitStatus)
+    currentProcess.value = null
 }
 
 
