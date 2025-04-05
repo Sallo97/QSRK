@@ -171,12 +171,7 @@ fun App() {
 /**
  * Aborts the [currentProcess] if it exists.
  */
-fun terminateProcess(currentProcess: MutableState<Process?>) {
-    currentProcess.value?.let {
-        it.destroyForcibly()
-        it.waitFor()
-    }
-}
+fun terminateProcess(currentProcess: MutableState<Process?>) = currentProcess.value?.destroyForcibly()
 
 /**
  * executes the [body] as a Kotlin script, updating the [output] Text Label
