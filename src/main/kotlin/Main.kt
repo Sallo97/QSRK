@@ -24,7 +24,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
@@ -207,12 +206,11 @@ private fun executeSource(
 }
 
 
-fun main() = runBlocking {
+fun main() =
     application {
 
         Window(title = "QSRK!", onCloseRequest = ::exitApplication) {
             App()
         }
     }
-}
 
