@@ -54,7 +54,7 @@ fun App() {
 
     MaterialTheme {
         var script by remember { mutableStateOf("Write your script here!") }
-        val output = remember { mutableStateOf(StringBuilder("The output of you script will be printed here!")) }
+        val output = remember { mutableStateOf("The output of you script will be printed here!") }
         val statusIcon = remember { mutableStateOf(StatusT.toIcon(StatusT.NOTHING)) }
 
         BoxWithConstraints {
@@ -87,8 +87,8 @@ fun App() {
                     // OutputBox
                     BasicTextField(
                         readOnly = true,
-                        value = output.value.toString(),
-                        onValueChange = {},
+                        value = output.value,
+                        onValueChange = { },
                         modifier = Modifier
                             .background(color = Color.LightGray)
                             .border(
@@ -160,8 +160,8 @@ fun App() {
  * executes the [body] as a Kotlin script, updating the [output] Text Label
  * accordingly.
  */
-private fun executeSource(output: MutableState<StringBuilder>, body: String, statusIcon: MutableState<ImageVector>) {
-    output.value.clear()
+private fun executeSource(output: MutableState<String>, body: String, statusIcon: MutableState<ImageVector>) {
+    output.value = ""
 
     // Save the content of body in the file tempScript.kts
     val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
@@ -173,7 +173,6 @@ private fun executeSource(output: MutableState<StringBuilder>, body: String, sta
     tempFile.toFile().deleteOnExit()
     tempFile.writeText(text = body)
 
-    // TODO set the status icon to "RUNNING"
     statusIcon.value = StatusT.toIcon(StatusT.RUNNING)
 
     // Create a process for said file and prints its execution in the terminal

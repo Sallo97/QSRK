@@ -34,7 +34,7 @@ enum class LineType { ERROR, EXCEPTION, MISSING;
 /**
  * Handles the execution of the Kotlin's script pointed by [source].
  */
-fun executeSource(source: String, content: MutableState<StringBuilder>) : Int {
+fun executeSource(source: String, content: MutableState<String>) : Int {
     // Initialising process
     try {
         val script = ProcessBuilder("kotlinc", "-script", source)
@@ -48,7 +48,7 @@ fun executeSource(source: String, content: MutableState<StringBuilder>) : Int {
             var nextChar: Char
             while (outReader.read().apply { nextChar = this.toChar() } != -1) {
                 line.append(nextChar)
-                content.value.append(nextChar)
+                content.value += nextChar
 
                 // Checking line
                 if (nextChar == '\n' || nextChar == '\r') {
