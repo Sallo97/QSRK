@@ -14,14 +14,14 @@ enum class LineType {
 
     companion object {
         private val ERROR_REGEX = Regex("(\\w*/*)*\\w+\\.kts:(\\d+:\\d+: error: .*([\\n\\r])*)")
-        private val EXCEPTION_REGEX = Regex("java\\.lang\\..+: .+([\\n\\r])*")
+        private val EXCEPTION_REGEX = Regex("(\\t+at )(\\w+.<init>\\(\\w+\\d+.kts)([:\\d]+)(\\)\\n*)")
         private val MISSING_REGEX = Regex("Cannot run program \"\\w+\": error=\\d+, No such file or directory")
 
         /**
          * checks the [line] type and updates the content accordingly
          */
-        fun parseLine(line: String?): LineType? {
-            return line?.let {
+        fun parseLine(line: String?): LineType? =
+            line?.let {
                 when {
                     ERROR_REGEX.matches(line) -> ERROR
                     EXCEPTION_REGEX.matches(line) -> EXCEPTION
@@ -29,16 +29,23 @@ enum class LineType {
                     else -> null
                 }
             }
-        }
 
         /**
          * Checks if the current [line] must be modified, if so updated [content] with the new version.
          */
-        fun updateContent(line: String, content: MutableState<String>, startLineIdx: Int){
-
-            when(parseLine(line)) {
+        fun updateContent(line: String, content: MutableState<String>, startLineIdx: Int) {
+            println(line)
+            val type = parseLine(line)
+            println(type)
+            when (type) {
                 ERROR -> {
                     val newLine = line.replace(ERROR_REGEX, "script.kts:$2")
+                    content.value = content.value.substring(startIndex = 0, endIndex = startLineIdx) + newLine
+                }
+
+                EXCEPTION -> {
+                    println("SONOQUI")
+                    val newLine = line.replace(EXCEPTION_REGEX, "$1script.kts$3$4")
                     content.value = content.value.substring(startIndex = 0, endIndex = startLineIdx) + newLine
                 }
 
