@@ -36,7 +36,7 @@ enum class LineType {
 /**
  * Handles the execution of the Kotlin's script pointed by [source].
  */
-fun executeSource(
+fun executeScript(
     source: String, content: MutableState<String>,
     currentProcess: MutableState<Process?>
 ): Int {

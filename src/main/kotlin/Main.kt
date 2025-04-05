@@ -207,14 +207,15 @@ private fun scriptExecution(
         prefix = "tempScript",
         suffix = ".kts",
         PosixFilePermissions.asFileAttribute(permissions)
-    )
-    tempFile.toFile().deleteOnExit()
-    tempFile.writeText(text = body)
+    ).also {
+        it.toFile().deleteOnExit()
+        it.writeText(text = body)
+    }
 
     status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
 
     // Create a process for said file and prints its execution in the terminal
-    val exitStatus = executeSource(source = tempFile.toString(), content = output, currentProcess)
+    val exitStatus = executeScript(source = tempFile.toString(), content = output, currentProcess)
 
     // General updates after process termination
     output.value += "\nScript terminated with exit status: $exitStatus"
