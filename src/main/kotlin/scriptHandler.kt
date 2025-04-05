@@ -96,6 +96,6 @@ fun executeScript(
             content.value += "\nYour system misses the Kotlin compiler, please be sure that you installed kotlinc"
         else
             content.value += "\nThe script was abruptly terminated"
-        return 130 //TODO maybe find a more fitting status than -1
+        return 130
     }
 }
