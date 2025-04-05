@@ -28,30 +28,43 @@ import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
 
-/**
- * The possible type of status of a script.
- */
-enum class StatusT {
-    SUCCESS, FAIL, RUNNING, NOTHING;
+
+data class ScriptStatus(val statusType: StatusType = StatusType.WAITING) {
+    val icon = toIcon(statusType)
+
+    /**
+     * The possible type of status of a script:
+     * SUCCESS -> The script has terminated with success (i.e. exitStatus = 0).
+     * FAIL -> The script has terminated with failure (i.e. exitStatus < 0)
+     * RUNNING -> The script has been started and has yet to finish
+     * WAITING -> No script has been started (this status happens only at the start of the program)
+     */
+    enum class StatusType {
+        SUCCESS, FAIL, RUNNING, WAITING;
+    }
 
     companion object {
         /**
-         * Given the [exitStatus] of a script returns the associated StatusT.
+         * Given the [exitStatus] of a terminated script, returns the associated StatusT.
          */
-        fun fromExitStatus(exitStatus: Int): StatusT = if (exitStatus == 0) SUCCESS else FAIL
+        fun fromExitStatus(exitStatus: Int): ScriptStatus {
+            val statusType = if (exitStatus == 0) StatusType.SUCCESS else StatusType.FAIL
+            return ScriptStatus(statusType)
+        }
 
         /**
-         * Given a [statusT] returns the associated icon (as of now it is just a text)
+         * Given a [statusType] returns the associated icon (as of now it is just a text)
          */
-        fun toIcon(statusT: StatusT): ImageVector =
-            when (statusT) {
-                SUCCESS -> Icons.Filled.Check
-                FAIL -> Icons.Filled.Warning
-                RUNNING -> Icons.Filled.Refresh
-                NOTHING -> Icons.Filled.Star
+        private fun toIcon(statusType: StatusType): ImageVector =
+            when (statusType) {
+                StatusType.SUCCESS -> Icons.Filled.Check
+                StatusType.FAIL -> Icons.Filled.Warning
+                StatusType.RUNNING -> Icons.Filled.Refresh
+                StatusType.WAITING -> Icons.Filled.Star
             }
     }
 }
+
 
 @Composable
 @Preview
@@ -60,7 +73,7 @@ fun App() {
     MaterialTheme {
         var script by remember { mutableStateOf("Write your script here!") }
         val output = remember { mutableStateOf("The output of you script will be printed here!") }
-        val statusIcon = remember { mutableStateOf(StatusT.toIcon(StatusT.NOTHING)) }
+        val status = remember { mutableStateOf(ScriptStatus()) }
         val currentProcess: MutableState<Process?> = remember { mutableStateOf(null) }
 
         BoxWithConstraints {
@@ -116,7 +129,7 @@ fun App() {
                     Button(
                         onClick = {
                             scope.launch(Dispatchers.IO) {
-                                executeSource(output, script, statusIcon, currentProcess)
+                                executeSource(output, script, status, currentProcess)
                             }
                         },
                         content = {
@@ -155,7 +168,7 @@ fun App() {
 
                     // StatusIcon
                     Icon(
-                        imageVector = statusIcon.value,
+                        imageVector = status.value.icon,
                         contentDescription = "status Icon",
                         modifier = Modifier
                             .size(100.dp)
@@ -178,37 +191,39 @@ fun terminateProcess(currentProcess: MutableState<Process?>) = currentProcess.va
  */
 private fun executeSource(
     output: MutableState<String>,
-    body: String, statusIcon: MutableState<ImageVector>,
+    body: String,
+    status: MutableState<ScriptStatus>,
     currentProcess: MutableState<Process?>
 ) {
+    if (status.value.statusType != ScriptStatus.StatusType.RUNNING) {
 
-    output.value = ""
+        output.value = ""
 
-    // Save the content of body in the file tempScript.kts
-    val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
-    val tempFile = createTempFile(
-        prefix = "tempScript",
-        suffix = ".kts",
-        PosixFilePermissions.asFileAttribute(permissions)
-    )
-    tempFile.toFile().deleteOnExit()
-    tempFile.writeText(text = body)
+        // Save the content of body in the file tempScript.kts
+        val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
+        val tempFile = createTempFile(
+            prefix = "tempScript",
+            suffix = ".kts",
+            PosixFilePermissions.asFileAttribute(permissions)
+        )
+        tempFile.toFile().deleteOnExit()
+        tempFile.writeText(text = body)
 
-    statusIcon.value = StatusT.toIcon(StatusT.RUNNING)
+        status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
 
-    // Create a process for said file and prints its execution in the terminal
-    val exitStatus = executeSource(source = tempFile.toString(), content = output, currentProcess)
+        // Create a process for said file and prints its execution in the terminal
+        val exitStatus = executeSource(source = tempFile.toString(), content = output, currentProcess)
 
-    // TODO update the content to print that the process terminated and its exitStatus
-    // Update the icon accordingly to the exit status
-    statusIcon.value = StatusT.toIcon(StatusT.fromExitStatus(exitStatus))
-    currentProcess.value = null
+        // TODO update the content to print that the process terminated and its exitStatus
+        // Update the icon accordingly to the exit status
+        status.value = ScriptStatus.fromExitStatus(exitStatus)
+        currentProcess.value = null
+    }
 }
 
 
 fun main() =
     application {
-
         Window(title = "QSRK!", onCloseRequest = ::exitApplication) {
             App()
         }
