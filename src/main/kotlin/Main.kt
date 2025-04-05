@@ -1,4 +1,5 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -112,7 +114,11 @@ fun App() {
                             }
                         },
                         content = {
-                            Text("PLAY SCRIPT")
+                            Image(
+                                painter = painterResource("drawable/playButton.svg"),
+                                contentDescription = "button icon",
+                                modifier = Modifier.size(100.dp)
+                            )
                         },
                         modifier = Modifier
                             .size(100.dp)
@@ -124,7 +130,11 @@ fun App() {
                     Button(
                         onClick = { },
                         content = {
-                            Text("STOP SCRIPT")
+                            Image(
+                                painter = painterResource("drawable/stopButton.svg"),
+                                contentDescription = "button icon",
+                                modifier = Modifier.size(100.dp)
+                            )
                         },
                         modifier = Modifier
                             .size(100.dp)
