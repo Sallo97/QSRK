@@ -52,12 +52,12 @@ fun App() {
 
     MaterialTheme {
         var script by remember { mutableStateOf("Write your script here!") }
-        val output = remember { mutableStateOf("The output of you script will be printed here!") }
+        val output = remember { mutableStateOf(StringBuilder("The output of you script will be printed here!")) }
         val statusIcon = remember { mutableStateOf(StatusT.toIcon(StatusT.NOTHING)) }
 
         BoxWithConstraints {
-            val windowHeight = maxHeight
-            val windowWidth = maxWidth
+//            val windowHeight = maxHeight
+//            val windowWidth = maxWidth
             val scope = rememberCoroutineScope()
 
             Row {
@@ -65,7 +65,8 @@ fun App() {
                 Column {
                     Spacer(Modifier.height(10.dp))
 
-                    val scriptBox = BasicTextField(
+                    // ScriptBox
+                    BasicTextField(
                         value = script,
                         onValueChange = { script = it },
                         modifier = Modifier
@@ -81,10 +82,11 @@ fun App() {
 
                     Spacer(Modifier.height(10.dp))
 
-                    val outputBox = BasicTextField(
+                    // OutputBox
+                    BasicTextField(
                         readOnly = true,
-                        value = output.value,
-                        onValueChange = {output.value = it},
+                        value = output.value.toString(),
+                        onValueChange = {},
                         modifier = Modifier
                             .background(color = Color.LightGray)
                             .border(
@@ -102,37 +104,40 @@ fun App() {
                 Column {
                     Spacer(Modifier.height(10.dp))
 
-                    val play = Button(
+                    // PlayButton
+                    Button(
                         onClick = {
                             scope.launch (Dispatchers.IO){
-                                executeScript(output, script, statusIcon)
+                                executeSource(output, script, statusIcon)
                             }
                         },
                         content = {
                             Text("PLAY SCRIPT")
                         },
                         modifier = Modifier
-                            .size(width = 100.dp, height = 100.dp)
+                            .size(100.dp)
                     )
 
                     Spacer(Modifier.height(10.dp))
 
-                    val stop = Button(
+                    // StopButton
+                    Button(
                         onClick = { },
                         content = {
                             Text("STOP SCRIPT")
                         },
                         modifier = Modifier
-                            .size(width = 100.dp, height = 100.dp)
+                            .size(100.dp)
                     )
 
                     Spacer(Modifier.height(10.dp))
 
-                    val status = Icon(
+                    // StatusIcon
+                    Icon(
                         imageVector = statusIcon.value,
                         contentDescription = "status Icon",
                         modifier = Modifier
-                            .size(width = 100.dp, height = 100.dp)
+                            .size(100.dp)
                     )
                 }
             }
@@ -145,8 +150,8 @@ fun App() {
  * executes the [body] as a Kotlin script, updating the [output] Text Label
  * accordingly.
  */
-private fun executeScript(output: MutableState<String>, body: String, statusIcon: MutableState<ImageVector>) {
-    output.value = "Starting executing script..."
+private fun executeSource(output: MutableState<StringBuilder>, body: String, statusIcon: MutableState<ImageVector>) {
+    output.value.clear()
 
     // Save the content of body in the file tempScript.kts
     val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
@@ -158,7 +163,7 @@ private fun executeScript(output: MutableState<String>, body: String, statusIcon
     tempFile.toFile().deleteOnExit()
     tempFile.writeText(text = body)
 
-    // TODO sett the status icon to "RUNNING"
+    // TODO set the status icon to "RUNNING"
     statusIcon.value = StatusT.toIcon(StatusT.RUNNING)
 
     // Create a process for said file and prints its execution in the terminal

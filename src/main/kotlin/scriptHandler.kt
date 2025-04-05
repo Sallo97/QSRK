@@ -1,3 +1,4 @@
+import androidx.compose.runtime.MutableState
 import java.io.IOException
 
 /**
@@ -33,49 +34,40 @@ enum class LineType { ERROR, EXCEPTION, MISSING;
 /**
  * Handles the execution of the Kotlin's script pointed by [source].
  */
-fun executeScript(source: String) {
+fun executeSource(source: String, content: MutableState<StringBuilder>) : Int {
     // Initialising process
     try {
-        val processScript = ProcessBuilder("kotlinc", "-script", source)
+        val script = ProcessBuilder("kotlinc", "-script", source)
             .redirectErrorStream(true)
             .redirectInput(ProcessBuilder.Redirect.INHERIT)
             .start()
 
         // Reading the output stream
-        processScript.inputReader().use {outReader ->
+        script.inputReader().use { outReader ->
             val line = StringBuilder()
             var nextChar: Char
             while (outReader.read().apply { nextChar = this.toChar() } != -1) {
-                print(nextChar) // TODO line is here only for debug purposes, remember to remove it.
                 line.append(nextChar)
+                content.value.append(nextChar)
 
                 // Checking line
                 if (nextChar == '\n' || nextChar == '\r') {
                     // Parsing line
-                    LineType.parseLine(line.toString())?.let {
-                        if (it == LineType.ERROR) {
-                            // TODO Update the terminalLabel to handle the case of error
-                        } else if (it == LineType.EXCEPTION) {
-                            // TODO handle the terminalLabel to handle the case of exception
-                        }
-                    }
+//                    LineType.parseLine(line.toString())?.let {
+//                        TODO("Implement how to handle the modification of text")
+//                    }
                     line.clear()
                 }
             }
         }
 
         // Check existStatus
-        println("\n---EXITING...---")
-        println("process ${processScript.pid()} with exit status ${processScript.exitValue()}")
+        return script.waitFor()
+
     } catch (ioExc: IOException) {
         if (LineType.parseLine(ioExc.message)  == LineType.MISSING)
             println("Your system misses the Kotlin compiler, please be sure that you installed kotlinc")
         else System.err.println("IOException: ${ioExc.message}\n script has been aborted.")
+        return -1 //TODO maybe find a more fitting status than -1
     }
-}
-
-
-fun main() {
-    val scriptPath = "test.kts"
-    executeScript(scriptPath)
 }
