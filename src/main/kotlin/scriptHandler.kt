@@ -44,7 +44,6 @@ enum class LineType {
                 }
 
                 EXCEPTION -> {
-                    println("SONOQUI")
                     val newLine = line.replace(EXCEPTION_REGEX, "$1script.kts$3$4")
                     content.value = content.value.substring(startIndex = 0, endIndex = startLineIdx) + newLine
                 }
