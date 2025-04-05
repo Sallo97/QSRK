@@ -34,23 +34,18 @@ enum class LineType {
          * Checks if the current [line] must be modified, if so updated [content] with the new version.
          */
         fun updateContent(line: String, content: MutableState<String>, startLineIdx: Int) {
-            println(line)
             val type = parseLine(line)
-            println(type)
             when (type) {
                 ERROR -> {
                     val newLine = line.replace(ERROR_REGEX, "script.kts:$2")
                     content.value = content.value.substring(startIndex = 0, endIndex = startLineIdx) + newLine
                 }
-
                 EXCEPTION -> {
                     val newLine = line.replace(EXCEPTION_REGEX, "$1script.kts$3$4")
                     content.value = content.value.substring(startIndex = 0, endIndex = startLineIdx) + newLine
                 }
-
-                else -> {
-                    //TODO
-                }
+                MISSING -> { }
+                null -> { }
             }
         }
     }
@@ -98,8 +93,9 @@ fun executeScript(
 
     } catch (ioExc: IOException) {
         if (LineType.parseLine(ioExc.message) == LineType.MISSING)
-            println("Your system misses the Kotlin compiler, please be sure that you installed kotlinc")
-        else System.err.println("IOException: ${ioExc.message}\n script has been aborted.")
-        return -1 //TODO maybe find a more fitting status than -1
+            content.value += "\nYour system misses the Kotlin compiler, please be sure that you installed kotlinc"
+        else
+            content.value += "\nThe script was abruptly terminated"
+        return 130 //TODO maybe find a more fitting status than -1
     }
 }

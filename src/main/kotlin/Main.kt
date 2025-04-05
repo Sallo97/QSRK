@@ -49,6 +49,7 @@ data class ScriptStatus(val statusType: StatusType = StatusType.WAITING) {
                 when (exitStatus){
                     0 -> StatusType.SUCCESS
                     137 -> StatusType.ABORTED
+                    130 -> StatusType.ABORTED
                     else -> StatusType.FAIL
                 }
             return ScriptStatus(statusType)
