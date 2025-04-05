@@ -32,7 +32,7 @@ data class ScriptStatus(val statusType: StatusType = StatusType.WAITING) {
     /**
      * The possible type of status of a script:
      * SUCCESS -> The script has terminated with success (i.e. exitStatus = 0).
-     * FAIL -> The script has terminated with failure (i.e. exitStatus < 0)
+     * FAIL -> The script has terminated with failure (i.e. exitStatus != 0)
      * RUNNING -> The script has been started and has yet to finish
      * WAITING -> No script has been started (this status happens only at the start of the program)
      */
