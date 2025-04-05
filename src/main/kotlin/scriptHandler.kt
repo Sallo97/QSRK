@@ -13,12 +13,12 @@ enum class LineType {
     ERROR, EXCEPTION, MISSING;
 
     companion object {
-        private val ERROR_REGEX = Regex("(\\w*/*)*\\w+\\.kts:\\d+:\\d+: error: .*([\\n\\r])*")
+        private val ERROR_REGEX = Regex("(\\w*/*)*\\w+\\.kts:(\\d+:\\d+: error: .*([\\n\\r])*)")
         private val EXCEPTION_REGEX = Regex("java\\.lang\\..+: .+([\\n\\r])*")
         private val MISSING_REGEX = Regex("Cannot run program \"\\w+\": error=\\d+, No such file or directory")
 
         /**
-         * Returns the LineT type associated to [line]
+         * checks the [line] type and updates the content accordingly
          */
         fun parseLine(line: String?): LineType? {
             return line?.let {
@@ -27,6 +27,23 @@ enum class LineType {
                     EXCEPTION_REGEX.matches(line) -> EXCEPTION
                     MISSING_REGEX.matches(line) -> MISSING
                     else -> null
+                }
+            }
+        }
+
+        /**
+         * Checks if the current [line] must be modified, if so updated [content] with the new version.
+         */
+        fun updateContent(line: String, content: MutableState<String>, startLineIdx: Int){
+
+            when(parseLine(line)) {
+                ERROR -> {
+                    val newLine = line.replace(ERROR_REGEX, "script.kts:$2")
+                    content.value = content.value.substring(startIndex = 0, endIndex = startLineIdx) + newLine
+                }
+
+                else -> {
+                    //TODO
                 }
             }
         }
@@ -51,6 +68,7 @@ fun executeScript(
         currentProcess.value = script
 
         // Reading the output stream
+        var startLineIdx = 0
         script.inputReader().use { outReader ->
             val line = StringBuilder()
             var nextChar: Char
@@ -61,10 +79,10 @@ fun executeScript(
                 // Checking line
                 if (nextChar == '\n' || nextChar == '\r') {
                     // Parsing line
-//                    LineType.parseLine(line.toString())?.let {
-//                        TODO("Implement how to handle the modification of text")
-//                    }
+                    LineType.updateContent(line.toString(), content, startLineIdx)
+
                     line.clear()
+                    startLineIdx = content.value.length
                 }
             }
         }
