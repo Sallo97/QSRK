@@ -46,7 +46,7 @@ data class ScriptStatus(val statusType: StatusType = StatusType.WAITING) {
          */
         fun fromExitStatus(exitStatus: Int): ScriptStatus {
             val statusType =
-                when (exitStatus){
+                when (exitStatus) {
                     0 -> StatusType.SUCCESS
                     137 -> StatusType.ABORTED
                     130 -> StatusType.ABORTED
