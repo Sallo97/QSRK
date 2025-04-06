@@ -1,10 +1,7 @@
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextDecoration
-
 
 object ErrorTransformation : VisualTransformation {
     private val segments: MutableList<Segment> = mutableListOf()
@@ -34,6 +31,8 @@ object ErrorTransformation : VisualTransformation {
                     segments.forEach { segment ->
                         if (segment.clickable){
                             val annotationData = rawText.substring(segment.range)
+                                .substringAfterLast(".kts:")
+                                .substringBeforeLast(":")
                             pushStringAnnotation(tag = "CLICKABLE", annotation = annotationData)
                             withStyle(style = segment.style) {
                                 append(text = rawText.substring(segment.range))
@@ -58,6 +57,8 @@ object ErrorTransformation : VisualTransformation {
                         it.forEach { newSegment ->
                             if (newSegment.clickable){
                                 val annotationData = rawText.substring(newSegment.range)
+                                    .substringAfterLast(".kts:")
+                                    .substringBeforeLast(":")
                                 pushStringAnnotation(tag = "CLICKABLE", annotation = annotationData)
                                 withStyle(style = newSegment.style) {
                                     append(text = rawText.substring(newSegment.range))

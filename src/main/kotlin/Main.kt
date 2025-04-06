@@ -8,17 +8,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -28,57 +27,12 @@ import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
 
-
-data class ScriptStatus(val statusType: StatusType = StatusType.WAITING) {
-    val icon = toIcon(statusType)
-
-    /**
-     * The possible type of status of a script:
-     * SUCCESS -> The script has terminated with success (i.e. exitStatus = 0).
-     * FAIL -> The script has terminated with failure (i.e. exitStatus != 0)
-     * RUNNING -> The script has been started and has yet to finish
-     * WAITING -> No script has been started (this status happens only at the start of the program)
-     */
-    enum class StatusType {
-        SUCCESS, FAIL, RUNNING, WAITING, ABORTED;
-    }
-
-    companion object {
-        /**
-         * Given the [exitStatus] of a terminated script, returns the associated StatusT.
-         */
-        fun fromExitStatus(exitStatus: Int): ScriptStatus {
-            val statusType =
-                when (exitStatus) {
-                    0 -> StatusType.SUCCESS
-                    137 -> StatusType.ABORTED
-                    130 -> StatusType.ABORTED
-                    else -> StatusType.FAIL
-                }
-            return ScriptStatus(statusType)
-        }
-
-        /**
-         * Given a [statusType] returns the associated icon (as of now it is just a text)
-         */
-        private fun toIcon(statusType: StatusType): ImageVector =
-            when (statusType) {
-                StatusType.SUCCESS -> Icons.Filled.Check
-                StatusType.FAIL -> Icons.Filled.Warning
-                StatusType.RUNNING -> Icons.Filled.Refresh
-                StatusType.WAITING -> Icons.Filled.Star
-                StatusType.ABORTED -> Icons.Filled.Info
-            }
-    }
-}
-
-
 @Composable
 @Preview
 fun App() {
 
     MaterialTheme {
-        var script by remember { mutableStateOf("Write your script here!") }
+        var script by remember { mutableStateOf(TextFieldValue(text = "Write your script here!")) }
         val output = remember { mutableStateOf("The output of you script will be printed here!") }
         val status = remember { mutableStateOf(ScriptStatus()) }
         val currentProcess: MutableState<Process?> = remember { mutableStateOf(null) }
@@ -131,9 +85,9 @@ fun App() {
                             )
                             .fillMaxWidth(0.85f)
                             .fillMaxHeight(0.8f)
-                            .pointerInput(Unit){
+                            .pointerInput(Unit) {
                                 detectTapGestures { tapOffset ->
-                                    textLayoutResult?.let {
+                                    textLayoutResult?.let { it ->
                                         val clickedCharOffset = it.getOffsetForPosition(tapOffset)
                                         ErrorTransformation.currentAnnotatedString?.let { annotatedString ->
                                             annotatedString.getStringAnnotations(
@@ -141,10 +95,18 @@ fun App() {
                                                 start = clickedCharOffset,
                                                 end = clickedCharOffset
                                             ).firstOrNull()?.let {
-                                                println("I WORK!")
+                                                // Parsing tag to retrieve row and col
+                                                val listError = it.item.split(":").map { str ->
+                                                    str.toInt()
+                                                }
+
+                                                // Determine and setting cursor position
+                                                val row = listError.first() - 1
+                                                val col = if (listError.size == 2) (listError[1] - 1) else 0
+                                                val cursorOffset = findCursorPosition(row, col, script.text)
+                                                script = script.copy(selection = TextRange(cursorOffset, cursorOffset))
                                             }
                                         }
-
                                     }
                                 }
                             }
@@ -161,7 +123,7 @@ fun App() {
                         enabled = status.value.statusType != ScriptStatus.StatusType.RUNNING,
                         onClick = {
                             scope.launch(Dispatchers.IO) {
-                                scriptExecution(output, script, status, currentProcess)
+                                scriptExecution(output, script.text, status, currentProcess)
                             }
                         },
                         content = {
@@ -210,6 +172,19 @@ fun App() {
         }
 
     }
+}
+
+/**
+ * TODO add better description
+ */
+fun findCursorPosition(row:Int, col:Int = 0, text: String) : Int{
+    // Retrieving actual position
+    var offsetRow = 0
+    val lines = text.lines()
+    for (i in 0..<row)
+        offsetRow += lines[i].length + 1
+    return offsetRow + col
+
 }
 
 /**
