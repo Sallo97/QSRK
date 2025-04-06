@@ -22,16 +22,17 @@ data class Segment(val range: IntRange, val style: SpanStyle, val clickable: Boo
     }
 }
 
+
+/**
+ * Returns true if [line] indicated that the user misses the `kotlinc` compiler, false otherwise
+ */
+fun isMissingCompiler(line: String?): Boolean = LineType.fromLine(line) == LineType.MISSING
+
 /**
  * Handles the highlighting of errors in the printed output of a process.
  */
-object ErrorParser {
-    private val segments: MutableList<Segment> = mutableListOf()
-
-    /**
-     * Returns true if [line] indicated that the user misses the `kotlinc` compiler, false otherwise
-     */
-    fun isMissingCompiler(line: String?): Boolean = LineType.fromLine(line) == LineType.MISSING
+class ErrorParser {
+    val segments: MutableList<Segment> = mutableListOf()
 
     /**
      * Given a range obtained within a single line, returns the new range of said line within the [offset]

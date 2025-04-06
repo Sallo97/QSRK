@@ -216,7 +216,8 @@ private fun scriptExecution(
     status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
 
     // Create a process for said file and prints its execution in the terminal
-    val exitStatus = executeScript(source = tempFile.toString(), content = output, currentProcess)
+    val parser = ErrorParser()
+    val exitStatus = executeScript(source = tempFile.toString(), content = output, currentProcess, parser)
 
     // General updates after process termination
     output.value += "\nScript terminated with exit status: $exitStatus"

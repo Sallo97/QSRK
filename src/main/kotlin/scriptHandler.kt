@@ -12,7 +12,8 @@ import java.io.IOException
  */
 fun executeScript(
     source: String, content: MutableState<String>,
-    currentProcess: MutableState<Process?>
+    currentProcess: MutableState<Process?>,
+    errorParser: ErrorParser
 ): Int {
 
     // Initialising process
@@ -36,7 +37,7 @@ fun executeScript(
                 // Checking line
                 if (nextChar == '\n' || nextChar == '\r') {
                     // Parsing line
-                    ErrorParser.parseLine(line.toString(), content, startLineIdx)
+                    errorParser.parseLine(line.toString(), content, startLineIdx)
 
                     line.clear()
                     startLineIdx = content.value.length
@@ -48,7 +49,7 @@ fun executeScript(
         return script.waitFor()
 
     } catch (ioExc: IOException) {
-        if (ErrorParser.isMissingCompiler(ioExc.message))
+        if (isMissingCompiler(ioExc.message))
             content.value += "\nYour system misses the Kotlin compiler, please be sure that you installed kotlinc"
         else
             content.value += "\nThe script was abruptly terminated"
