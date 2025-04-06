@@ -2,6 +2,7 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Button
@@ -15,7 +16,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -79,6 +82,7 @@ fun App() {
         val output = remember { mutableStateOf("The output of you script will be printed here!") }
         val status = remember { mutableStateOf(ScriptStatus()) }
         val currentProcess: MutableState<Process?> = remember { mutableStateOf(null) }
+        var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
         BoxWithConstraints {
 //            val windowHeight = maxHeight
@@ -109,6 +113,11 @@ fun App() {
 
                     // OutputBox
                     BasicTextField(
+                        onTextLayout = {
+                            textLayoutResult = it
+                        },
+
+                        enabled = false,
                         visualTransformation = ErrorTransformation,
                         readOnly = true,
                         value = output.value,
@@ -122,6 +131,23 @@ fun App() {
                             )
                             .fillMaxWidth(0.85f)
                             .fillMaxHeight(0.8f)
+                            .pointerInput(Unit){
+                                detectTapGestures { tapOffset ->
+                                    textLayoutResult?.let {
+                                        val clickedCharOffset = it.getOffsetForPosition(tapOffset)
+                                        ErrorTransformation.currentAnnotatedString?.let { annotatedString ->
+                                            annotatedString.getStringAnnotations(
+                                                tag = "CLICKABLE",
+                                                start = clickedCharOffset,
+                                                end = clickedCharOffset
+                                            ).firstOrNull()?.let {
+                                                println("I WORK!")
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
                     )
                 }
 

@@ -44,7 +44,7 @@ object ErrorParser {
 
         // Update content by replacing the name to the temp file in the lines with `script.kts`
         val newSegments =
-            when (val lineType = LineType.fromLine(line)) {
+            when (LineType.fromLine(line)) {
                 LineType.ERROR -> {
                     // val newLine = LineType.replacePath(lineType, line)!!
                     val matchResult = LineType.ERROR_REGEX.find(line)!!
@@ -140,7 +140,7 @@ enum class LineType {
             }
 
         /**
-         * Given a [line] of type [lineType] replace the full path to the temp file
+         * Given a [line] of type replace the full path to the temp file
          * with `script.kts`
          */
         fun replacePath(line: String): String? = when (fromLine(line)) {
