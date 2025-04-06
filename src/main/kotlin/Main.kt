@@ -220,12 +220,12 @@ private fun scriptExecution(
     val exitStatus = executeScript(
         source = tempFile.toString(),
         content = output,
-        currentProcess,
-        ErrorTransformation.parser)
+        currentProcess
+    )
 
     // General updates after process termination
     val exitMessage = "\nScript terminated with exit status: $exitStatus"
-    ErrorTransformation.parser.parseLine(exitMessage, output, output.value.length)
+    output.value += exitMessage
     status.value = ScriptStatus.fromExitStatus(exitStatus)
     currentProcess.value = null
 }

@@ -1,4 +1,3 @@
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -30,9 +29,7 @@ fun isMissingCompiler(line: String?): Boolean = LineType.fromLine(line) == LineT
 /**
  * Handles the highlighting of errors in the printed output of a process.
  */
-class ErrorParser {
-    val segments: MutableList<Segment> = mutableListOf()
-
+object ErrorParser {
     /**
      * Given a range obtained within a single line, returns the new range of said line within the [offset]
      * where it is found in content.
@@ -43,12 +40,11 @@ class ErrorParser {
     /**
      * Parses [line], modifying the content and setting the style accordingly.
      */
-    fun parseLine(line: String, content: MutableState<String>, startLineIdx: Int = 0) {
+    fun parseLine(line: String, startLineIdx: Int = 0) : List<Segment> {
 
         // Update content by replacing the name to the temp file in the lines with `script.kts`
-        val lineType = LineType.fromLine(line)
-        val (newLine, newSegments) =
-            when (lineType) {
+        val newSegments =
+            when (val lineType = LineType.fromLine(line)) {
                 LineType.ERROR -> {
                     val newLine = LineType.replacePath(lineType, line)!!
                     val matchResult = LineType.ERROR_REGEX.find(newLine)!!
@@ -60,7 +56,6 @@ class ErrorParser {
 
                     val clickableSegment = Segment.createClickableSegment(clickableRange)
 
-                    // CONSIDER THE SPACE HERE!
                     val spaceSegment1 = Segment(
                         range = IntRange(start = clickableRange.last+1, endInclusive = clickableRange.last+1)
                     )
@@ -82,7 +77,7 @@ class ErrorParser {
                     val remainderRange = matchResult.groups[4]!!.range.rangeInContent(startLineIdx)
                     val remainderSegment = Segment (range = remainderRange)
 
-                    newLine to listOf(clickableSegment, spaceSegment1, errorSegment, spaceSegment2, remainderSegment)
+                    listOf(clickableSegment, spaceSegment1, errorSegment, spaceSegment2, remainderSegment)
                 }
 
                 LineType.EXCEPTION -> {
@@ -107,17 +102,16 @@ class ErrorParser {
                         style = SpanStyle(fontWeight = FontWeight.Bold)
                     )
 
-                    newLine to listOf(startSegment, clickableSegment, remainderSegment)
+                    listOf(startSegment, clickableSegment, remainderSegment)
                 }
 
                 else -> {
                     val segmentRange = IntRange(0, line.lastIndex).rangeInContent(startLineIdx)
                     val segment = Segment(range = segmentRange)
-                    line to listOf(segment)
+                    listOf(segment)
                 }
             }
-        content.value = content.value.substring(startIndex = 0, endIndex = startLineIdx) + newLine
-        segments.addAll(newSegments)
+        return newSegments
     }
 }
 
