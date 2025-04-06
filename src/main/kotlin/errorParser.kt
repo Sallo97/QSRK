@@ -46,8 +46,8 @@ object ErrorParser {
         val newSegments =
             when (val lineType = LineType.fromLine(line)) {
                 LineType.ERROR -> {
-                    val newLine = LineType.replacePath(lineType, line)!!
-                    val matchResult = LineType.ERROR_REGEX.find(newLine)!!
+                    // val newLine = LineType.replacePath(lineType, line)!!
+                    val matchResult = LineType.ERROR_REGEX.find(line)!!
 
                     val clickableRange = IntRange (
                         start = matchResult.groups[1]!!.range.first,
@@ -81,8 +81,8 @@ object ErrorParser {
                 }
 
                 LineType.EXCEPTION -> {
-                    val newLine = LineType.replacePath(lineType, line)!!
-                    val matchResult = LineType.EXCEPTION_REGEX.find(newLine)!!
+                    // val newLine = LineType.replacePath(lineType, line)!!
+                    val matchResult = LineType.EXCEPTION_REGEX.find(line)!!
 
                     val startRange = matchResult.groups[1]!!.range.rangeInContent(startLineIdx)
                     val startSegment = Segment (
@@ -143,7 +143,7 @@ enum class LineType {
          * Given a [line] of type [lineType] replace the full path to the temp file
          * with `script.kts`
          */
-        fun replacePath(lineType: LineType, line: String): String? = when (lineType) {
+        fun replacePath(line: String): String? = when (fromLine(line)) {
                 ERROR -> line.replace(LineType.ERROR_REGEX, "script.kts$2 $3 $4")
                 EXCEPTION -> line.replace(LineType.EXCEPTION_REGEX, "$1Script$3(script.kts$5$6$7")
                 else -> null
