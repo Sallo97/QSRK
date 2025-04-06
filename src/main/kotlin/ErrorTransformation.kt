@@ -15,6 +15,28 @@ object ErrorTransformation : VisualTransformation {
         segments.clear()
     }
 
+    /**
+     * Appends the segments
+     */
+    private fun appendSegment(segment:Segment, builder:AnnotatedString.Builder, rawText: String){
+        if (segment.clickable){
+            val annotationData = rawText.substring(segment.range)
+                .substringAfterLast(".kts:")
+                .substringBeforeLast(":")
+            builder.pushStringAnnotation(tag = "CLICKABLE", annotation = annotationData)
+            builder.withStyle(style = segment.style) {
+                append(text = rawText.substring(segment.range))
+            }
+            builder.pop()
+        } else {
+            builder.append(
+                AnnotatedString(
+                    text = rawText.substring(segment.range),
+                    spanStyle = segment.style
+                )
+            )
+        }
+    }
 
     /**
      * Handles the colouring of the text.
@@ -26,27 +48,11 @@ object ErrorTransformation : VisualTransformation {
         if (rawText == "") reset()
         else
             buildAnnotatedString {
+
                 // Appending already parsed segments
                 if (segments.isNotEmpty())
                     segments.forEach { segment ->
-                        if (segment.clickable){
-                            val annotationData = rawText.substring(segment.range)
-                                .substringAfterLast(".kts:")
-                                .substringBeforeLast(":")
-                            pushStringAnnotation(tag = "CLICKABLE", annotation = annotationData)
-                            withStyle(style = segment.style) {
-                                append(text = rawText.substring(segment.range))
-                            }
-                            pop()
-                        } else {
-                            append(
-                                AnnotatedString(
-                                    text = rawText.substring(segment.range),
-                                    spanStyle = segment.style
-                                )
-                            )
-                        }
-
+                        appendSegment(segment, builder = this, rawText)
                         lastIdx = segment.range.last + 1
                     }
 
@@ -55,24 +61,7 @@ object ErrorTransformation : VisualTransformation {
                 remainderText.lines().forEach { line ->
                     ErrorParser.parseLine(line = line, startLineIdx = lastIdx).also {
                         it.forEach { newSegment ->
-                            if (newSegment.clickable){
-                                val annotationData = rawText.substring(newSegment.range)
-                                    .substringAfterLast(".kts:")
-                                    .substringBeforeLast(":")
-                                pushStringAnnotation(tag = "CLICKABLE", annotation = annotationData)
-                                withStyle(style = newSegment.style) {
-                                    append(text = rawText.substring(newSegment.range))
-                                }
-                                pop()
-                            }
-                            else {
-                                append(
-                                    AnnotatedString(
-                                        text = rawText.substring(newSegment.range),
-                                        spanStyle = newSegment.style
-                                    )
-                                )
-                            }
+                            appendSegment(newSegment, builder = this, rawText)
                             lastIdx = newSegment.range.last + 1
                         }
                         segments.addAll(it)
