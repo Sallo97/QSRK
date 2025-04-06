@@ -38,7 +38,6 @@ fun executeScript(
                 if (nextChar == '\n' || nextChar == '\r') {
                     // Parsing line
                     errorParser.parseLine(line.toString(), content, startLineIdx)
-
                     line.clear()
                     startLineIdx = content.value.length
                 }
@@ -50,9 +49,9 @@ fun executeScript(
 
     } catch (ioExc: IOException) {
         if (isMissingCompiler(ioExc.message))
-            content.value += "\nYour system misses the Kotlin compiler, please be sure that you installed kotlinc"
+            errorParser.parseLine("Your system misses the Kotlin compiler, please be sure that you installed kotlinc", content)
         else
-            content.value += "\nThe script was abruptly terminated"
+            errorParser.parseLine("The script was abruptly terminated", content)
         return 130
     }
 }

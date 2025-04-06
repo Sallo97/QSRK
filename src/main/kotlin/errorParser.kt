@@ -8,13 +8,12 @@ import androidx.compose.ui.text.style.TextDecoration
  * Represents a [range] of contiguous text in the output which needs to be rendered with the specified [style]
  * and could be [clickable] or not.
  */
-data class Segment(val range: IntRange, val style: SpanStyle, val clickable: Boolean = false) {
+data class Segment(val range: IntRange, val style: SpanStyle = SpanStyle(), val clickable: Boolean = false) {
     companion object {
         fun createClickableSegment(range: IntRange): Segment = Segment(
             range = range,
             style = SpanStyle(
-                color = Color.Cyan,
-                fontWeight = FontWeight.Bold,
+                color = Color.Blue,
                 textDecoration = TextDecoration.Underline
             ),
             clickable = true
@@ -44,7 +43,7 @@ class ErrorParser {
     /**
      * Parses [line], modifying the content and setting the style accordingly.
      */
-    fun parseLine(line: String, content: MutableState<String>, startLineIdx: Int) {
+    fun parseLine(line: String, content: MutableState<String>, startLineIdx: Int = 0) {
 
         // Update content by replacing the name to the temp file in the lines with `script.kts`
         val lineType = LineType.fromLine(line)
@@ -54,8 +53,17 @@ class ErrorParser {
                     val newLine = LineType.replacePath(lineType, line)!!
                     val matchResult = LineType.ERROR_REGEX.find(newLine)!!
 
-                    val clickableRange = matchResult.groups[2]!!.range.rangeInContent(startLineIdx)
+                    val clickableRange = IntRange (
+                        start = matchResult.groups[1]!!.range.first,
+                        endInclusive = matchResult.groups[2]!!.range.last
+                    ).rangeInContent(startLineIdx)
+
                     val clickableSegment = Segment.createClickableSegment(clickableRange)
+
+                    // CONSIDER THE SPACE HERE!
+                    val spaceSegment1 = Segment(
+                        range = IntRange(start = clickableRange.last+1, endInclusive = clickableRange.last+1)
+                    )
 
                     val errorRange = matchResult.groups[3]!!.range.rangeInContent(startLineIdx)
                     val errorSegment = Segment(
@@ -66,35 +74,62 @@ class ErrorParser {
                         )
                     )
 
-                    newLine to listOf(clickableSegment, errorSegment)
+                    val spaceSegment2 = Segment(
+                        range = IntRange(start = errorRange.last+1, endInclusive = errorRange.last+1),
+                        style = SpanStyle(fontWeight = FontWeight.Bold)
+                    )
+
+                    val remainderRange = matchResult.groups[4]!!.range.rangeInContent(startLineIdx)
+                    val remainderSegment = Segment (range = remainderRange)
+
+                    newLine to listOf(clickableSegment, spaceSegment1, errorSegment, spaceSegment2, remainderSegment)
                 }
 
                 LineType.EXCEPTION -> {
                     val newLine = LineType.replacePath(lineType, line)!!
                     val matchResult = LineType.EXCEPTION_REGEX.find(newLine)!!
 
-                    val clickableRange = matchResult.groups[3]!!.range.rangeInContent(startLineIdx)
+                    val startRange = matchResult.groups[1]!!.range.rangeInContent(startLineIdx)
+                    val startSegment = Segment (
+                        range = startRange,
+                        style = SpanStyle(fontWeight = FontWeight.Bold)
+                    )
+
+                    val clickableRange = IntRange(
+                        start = matchResult.groups[2]!!.range.first,
+                        endInclusive = matchResult.groups[6]!!.range.last
+                    ).rangeInContent(startLineIdx)
                     val clickableSegment = Segment.createClickableSegment(clickableRange)
 
-                    newLine to listOf(clickableSegment)
+                    val remainderRanger = matchResult.groups[7]!!.range.rangeInContent(startLineIdx)
+                    val remainderSegment = Segment(
+                        range = remainderRanger,
+                        style = SpanStyle(fontWeight = FontWeight.Bold)
+                    )
+
+                    newLine to listOf(startSegment, clickableSegment, remainderSegment)
                 }
 
-                else -> line to null
+                else -> {
+                    val segmentRange = IntRange(0, line.lastIndex).rangeInContent(startLineIdx)
+                    val segment = Segment(range = segmentRange)
+                    line to listOf(segment)
+                }
             }
         content.value = content.value.substring(startIndex = 0, endIndex = startLineIdx) + newLine
-        newSegments?.let { segments.addAll(it) }
+        segments.addAll(newSegments)
     }
 }
 
 /**
  * TODO Add better description
  */
-private enum class LineType {
+enum class LineType {
     ERROR, EXCEPTION, MISSING;
 
     companion object {
         val ERROR_REGEX = Regex("((?:/*\\w*)*.kts)(:\\d*:\\d*:) (error:) ((\\w*\\s*)*)")
-        val EXCEPTION_REGEX = Regex("(\\s+at )(\\w+)(.<init>)(\\(\\w+.kts)([:\\d]+)(\\))(\\n*)")
+        val EXCEPTION_REGEX = Regex("(\\s+at )(\\w+)(.<init>)(\\(\\w+.kts)([:\\d]+)(\\))(\\s*)")
         val MISSING_REGEX = Regex("Cannot run program \"\\w+\": error=\\d+, No such file or directory")
 
         /**

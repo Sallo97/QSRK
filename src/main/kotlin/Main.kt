@@ -109,6 +109,7 @@ fun App() {
 
                     // OutputBox
                     BasicTextField(
+                        visualTransformation = ErrorTransformation,
                         readOnly = true,
                         value = output.value,
                         onValueChange = { },
@@ -216,11 +217,15 @@ private fun scriptExecution(
     status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
 
     // Create a process for said file and prints its execution in the terminal
-    val parser = ErrorParser()
-    val exitStatus = executeScript(source = tempFile.toString(), content = output, currentProcess, parser)
+    val exitStatus = executeScript(
+        source = tempFile.toString(),
+        content = output,
+        currentProcess,
+        ErrorTransformation.parser)
 
     // General updates after process termination
-    output.value += "\nScript terminated with exit status: $exitStatus"
+    val exitMessage = "\nScript terminated with exit status: $exitStatus"
+    ErrorTransformation.parser.parseLine(exitMessage, output, output.value.length)
     status.value = ScriptStatus.fromExitStatus(exitStatus)
     currentProcess.value = null
 }
