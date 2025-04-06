@@ -122,7 +122,7 @@ enum class LineType {
     ERROR, EXCEPTION, MISSING;
 
     companion object {
-        val ERROR_REGEX = Regex("((?:/*\\w*)*.kts)(:\\d*:\\d*:) (error:) ((\\w*\\s*)*)")
+        val ERROR_REGEX = Regex("((?:/*\\w*)*.kts)(:\\d*:\\d*:) (error:) ((.*\\s*)*)")
         val EXCEPTION_REGEX = Regex("(\\s+at )(\\w+)(.<init>)(\\(\\w+.kts)([:\\d]+)(\\))(\\s*)")
         val MISSING_REGEX = Regex("Cannot run program \"\\w+\": error=\\d+, No such file or directory")
 

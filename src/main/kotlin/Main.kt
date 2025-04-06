@@ -99,10 +99,9 @@ fun App() {
                                                 val listError = it.item.split(":").map { str ->
                                                     str.toInt()
                                                 }
-
                                                 // Determine and setting cursor position
-                                                val row = listError.first() - 1
-                                                val col = if (listError.size == 2) (listError[1] - 1) else 0
+                                                val row = listError.first()
+                                                val col = if (listError.size == 2) (listError[1]) else 0
                                                 val cursorOffset = findCursorPosition(row, col, script.text)
                                                 script = script.copy(selection = TextRange(cursorOffset, cursorOffset))
                                             }
@@ -175,15 +174,18 @@ fun App() {
 }
 
 /**
- * TODO add better description
+ * Given the [row] and [col] of an error description referring to [text], returns the exact cursor position the error
+ * refers to
  */
-fun findCursorPosition(row:Int, col:Int = 0, text: String) : Int{
+private fun findCursorPosition(row:Int, col:Int = 0, text: String) : Int{
     // Retrieving actual position
+    val realRow = row - 1
+    val realCol = col - 1
     var offsetRow = 0
     val lines = text.lines()
-    for (i in 0..<row)
+    for (i in 0..<realRow)
         offsetRow += lines[i].length + 1
-    return offsetRow + col
+    return offsetRow + realCol
 
 }
 
