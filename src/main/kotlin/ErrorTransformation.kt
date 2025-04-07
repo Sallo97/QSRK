@@ -9,7 +9,6 @@ object ErrorTransformation : VisualTransformation {
     private val segments: MutableList<Segment> = mutableListOf()
     var currentAnnotatedString: AnnotatedString? = null
 
-
     /**
      * Resets the errorTransformation for handling a new process
      */
