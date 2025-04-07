@@ -7,7 +7,7 @@ import androidx.compose.ui.text.font.FontWeight
 /**
  * Returns true if [line] indicated that the user misses the `kotlinc` compiler, false otherwise
  */
-fun isMissingCompiler(line: String?): Boolean = LineType.fromLine(line) == LineType.MISSING
+fun isMissingCompiler(line: String?): Boolean = LineType.fromLine(line) == LineType.MISSING_COMPILER
 
 /**
  * Handles the highlighting of errors in the printed output of a process.
@@ -24,20 +24,26 @@ object ErrorParser {
 
     /**
      * Parses [line], creating a list of segments for stylising said line.
+     * The segments will have ranges after [offset]
      */
-    fun parseLine(line: String, startLineIdx: Int = 0): List<Segment> {
+    fun parseLine(line: String, offset: Int = 0): List<Segment> {
 
-        // Update content by replacing the name to the temp file in the lines with `script.kts`
         val newSegments =
             when (LineType.fromLine(line)) {
                 LineType.ERROR -> {
-                    // val newLine = LineType.replacePath(lineType, line)!!
+                    // An error line is composed of the following components:
+                    // - clickableRange = the initial portion in the form "path_to_script:row:col:" (will be parsed as
+                    //                      clickable).
+                    // - spaceSegment1 = the space between clickableRange and errorRange.
+                    // - errorRange = the message "error:" (will be parsed with a red coloring).
+                    // - spaceSegment2 = the space between errorRange and remainderRange.
+                    // - remainderSegment = the explanation by kotlinc of the error.
                     val matchResult = LineType.ERROR_REGEX.find(line)!!
 
                     val clickableRange = IntRange(
                         start = matchResult.groups[1]!!.range.first,
                         endInclusive = matchResult.groups[2]!!.range.last
-                    ).rangeInContent(startLineIdx)
+                    ).rangeInContent(offset)
 
                     val clickableSegment = Segment.createClickableSegment(clickableRange)
 
@@ -45,7 +51,7 @@ object ErrorParser {
                         range = IntRange(start = clickableRange.last + 1, endInclusive = clickableRange.last + 1)
                     )
 
-                    val errorRange = matchResult.groups[3]!!.range.rangeInContent(startLineIdx)
+                    val errorRange = matchResult.groups[3]!!.range.rangeInContent(offset)
                     val errorSegment = Segment.createErrorSegment(errorRange)
 
                     val spaceSegment2 = Segment(
@@ -53,17 +59,20 @@ object ErrorParser {
                         style = SpanStyle(fontWeight = FontWeight.Bold)
                     )
 
-                    val remainderRange = matchResult.groups[4]!!.range.rangeInContent(startLineIdx, true)
-                    val remainderSegment = Segment(range = remainderRange)
+                    val explanationRange = matchResult.groups[4]!!.range.rangeInContent(offset, true)
+                    val explanationSegment = Segment(range = explanationRange)
 
-                    listOf(clickableSegment, spaceSegment1, errorSegment, spaceSegment2, remainderSegment)
+                    listOf(clickableSegment, spaceSegment1, errorSegment, spaceSegment2, explanationSegment)
                 }
 
                 LineType.EXCEPTION -> {
-                    // val newLine = LineType.replacePath(lineType, line)!!
+                    // With Java Exception we parse only the line containing the indication of the row where it happens.
+                    // - start = the initial portion in the form "\tat".
+                    // - clickableRange = "Class.<init>(script.kts:row)" (must be clickable within the GUI)
+                    // - remainderRange = the remaining space (if there is any)
                     val matchResult = LineType.EXCEPTION_REGEX.find(line)!!
 
-                    val startRange = matchResult.groups[1]!!.range.rangeInContent(startLineIdx)
+                    val startRange = matchResult.groups[1]!!.range.rangeInContent(offset)
                     val startSegment = Segment(
                         range = startRange,
                     )
@@ -71,10 +80,10 @@ object ErrorParser {
                     val clickableRange = IntRange(
                         start = matchResult.groups[2]!!.range.first,
                         endInclusive = matchResult.groups[6]!!.range.last
-                    ).rangeInContent(startLineIdx)
+                    ).rangeInContent(offset)
                     val clickableSegment = Segment.createClickableSegment(clickableRange)
 
-                    val remainderRange = matchResult.groups[7]!!.range.rangeInContent(startLineIdx, true)
+                    val remainderRange = matchResult.groups[7]!!.range.rangeInContent(offset, true)
                     val remainderSegment = Segment(
                         range = remainderRange,
                     )
@@ -83,7 +92,7 @@ object ErrorParser {
                 }
 
                 else -> {
-                    val segmentRange = IntRange(0, line.lastIndex).rangeInContent(startLineIdx, true)
+                    val segmentRange = IntRange(0, line.lastIndex).rangeInContent(offset, true)
                     val segment = Segment(range = segmentRange)
                     listOf(segment)
                 }
@@ -93,10 +102,13 @@ object ErrorParser {
 }
 
 /**
- * TODO Add better description
+ * Describes the type of lines parsed for errors:
+ * ERROR = it describes a Kotlin error.
+ * EXCEPTION = it describes a Java exception.
+ * MISSING_COMPILER = it indicates that the user misses the kotlinc compiler.
  */
 enum class LineType {
-    ERROR, EXCEPTION, MISSING;
+    ERROR, EXCEPTION, MISSING_COMPILER;
 
     companion object {
         val ERROR_REGEX = Regex("((?:/*\\w*)*.kts)(:\\d*:\\d*:) (error:) ((.*\\s*)*)")
@@ -111,19 +123,9 @@ enum class LineType {
                 when {
                     ERROR_REGEX.matches(line) -> ERROR
                     EXCEPTION_REGEX.matches(line) -> EXCEPTION
-                    MISSING_REGEX.matches(line) -> MISSING
+                    MISSING_REGEX.matches(line) -> MISSING_COMPILER
                     else -> null
                 }
             }
-
-//        /**
-//         * Given a [line] of type replace the full path to the temp file
-//         * with `script.kts`
-//         */
-//        fun replacePath(line: String): String? = when (fromLine(line)) {
-//            ERROR -> line.replace(ERROR_REGEX, "script.kts$2 $3 $4")
-//            EXCEPTION -> line.replace(EXCEPTION_REGEX, "$1Script$3(script.kts$5$6$7")
-//            else -> null
-//        }
     }
 }

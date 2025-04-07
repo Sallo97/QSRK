@@ -65,7 +65,7 @@ object ErrorTransformation : VisualTransformation {
                 remainderText.lines().also { lines ->
                     // Parse all the lines except the last one
                     lines.take(lines.size - 1).forEach { line ->
-                        ErrorParser.parseLine(line = line, startLineIdx = lastIdx).also { newSegments ->
+                        ErrorParser.parseLine(line = line, offset = lastIdx).also { newSegments ->
                             newSegments.forEach { segment ->
                                 appendSegment(segment, this, rawText)
                                 lastIdx = segment.range.last + 1
