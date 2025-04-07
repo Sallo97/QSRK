@@ -1,7 +1,5 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
@@ -21,6 +19,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.nio.file.attribute.PosixFilePermissions
@@ -70,10 +69,9 @@ fun App() {
                         onTextLayout = {
                             textLayoutResult = it
                         },
-
-                        enabled = true,
-                        visualTransformation = ErrorTransformation,
+                        enabled = false,
                         readOnly = true,
+                        visualTransformation = ErrorTransformation,
                         value = output.value,
                         onValueChange = { },
                         modifier = Modifier
@@ -85,6 +83,7 @@ fun App() {
                             )
                             .fillMaxWidth(0.85f)
                             .fillMaxHeight(0.8f)
+                            .verticalScroll(rememberScrollState())  // Enable scrolling
                             .pointerInput(Unit) {
                                 detectTapGestures { tapOffset ->
                                     textLayoutResult?.let { it ->
@@ -177,7 +176,7 @@ fun App() {
  * Given the [row] and [col] of an error description referring to [text], returns the exact cursor position the error
  * refers to
  */
-private fun findCursorPosition(row:Int, col:Int = 0, text: String) : Int{
+private fun findCursorPosition(row: Int, col: Int = 0, text: String): Int {
     // Retrieving actual position
     val realRow = row - 1
     val realCol = col - 1
