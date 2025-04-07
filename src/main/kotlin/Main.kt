@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import guiComponents.MyColors
 import guiComponents.buttons.playButton
 import guiComponents.buttons.stopButton
 import guiComponents.fields.editField

@@ -1,5 +1,6 @@
 package guiComponents.fields
 
+import guiComponents.MyColors
 import addLine
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,6 +29,7 @@ inline fun editField(
         onValueChange = { script.value = it },
         visualTransformation = SyntaxTransformation,
         textStyle = textStyle,
+        cursorBrush = MyColors.cursorColor, // 👈 White cursor
         modifier = Modifier
             .background(MyColors.fieldBackground)
             .border(

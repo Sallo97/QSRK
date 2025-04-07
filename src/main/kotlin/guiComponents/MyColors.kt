@@ -1,4 +1,7 @@
+package guiComponents
+
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 
 /**
  * Contains the colors used in the GUI
@@ -10,6 +13,5 @@ object MyColors {
     val fieldBackground = Color.DarkGray
     val fieldBorder = Color.Transparent
     val windowBackground = Color.hsv(hue = 15f, saturation = 0.75f, value = 1f) // Light blue background
-
-
+    val cursorColor = SolidColor(Color.White)
 }
