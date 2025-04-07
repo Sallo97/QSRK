@@ -2,10 +2,9 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,111 +49,125 @@ fun App() {
         var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
         val textStyle = TextStyle(color = Color.LightGray, fontFamily = FontFamily.Monospace)
-        val backgroundColor = Color.DarkGray
-        val borderColor = Color.Transparent
 
-        BoxWithConstraints {
-//            val windowHeight = maxHeight
-//            val windowWidth = maxWidth
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MyColors.windowBackground)
+        ){
             val scope = rememberCoroutineScope()
 
             Row {
                 Spacer(Modifier.width(10.dp))
                 Column {
                     Spacer(Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(MyColors.fieldBackground, shape = RoundedCornerShape(10.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .fillMaxWidth(0.85f)
+                            .fillMaxHeight(0.8f)
+                            .verticalScroll(rememberScrollState())  // Enable scrolling
+                    ) {
+                        Row {
+                            // LineBox
+                            BasicTextField(
+                                value = LineNumbers.text,
+                                readOnly = true,
+                                onValueChange = { },
+                                textStyle = textStyle,
+                                modifier = Modifier
+                                    .background(MyColors.fieldBackground)
+                                    .border(
+                                        width = 2.dp,
+                                        brush = SolidColor(MyColors.fieldBorder),
+                                        shape = RectangleShape
+                                    )
+                                    .fillMaxWidth(0.04f)
+                                    .fillMaxHeight()
+                            )
 
-                    Row{
-                        // ScriptBox
-                        BasicTextField(
-                            value = LineNumbers.text,
-                            readOnly = true,
-                            onValueChange = {  },
-                            textStyle = textStyle,
-                            modifier = Modifier
-                                .background(backgroundColor)
-                                .border(
-                                    width = 2.dp,
-                                    brush = SolidColor(borderColor),
-                                    shape = RectangleShape
-                                )
-                                .fillMaxWidth(0.025f)
-                                .fillMaxHeight(0.8f)
-                        )
-
-                        // ScriptBox
-                        BasicTextField(
-                            value = script,
-                            onValueChange = { script = it },
-                            textStyle = textStyle,
-                            modifier = Modifier
-                                .background(backgroundColor)
-                                .border(
-                                    width = 0.dp,
-                                    brush = SolidColor(borderColor),
-                                    shape = RectangleShape
-                                )
-                                .fillMaxWidth(0.85f)
-                                .fillMaxHeight(0.8f)
-                                .onKeyEvent { keyEvent ->
-                                    if (keyEvent.key == Key.Enter){
-                                        LineNumbers.addLine()
-                                        true
-                                    } else {
-                                        false
+                            // ScriptBox
+                            BasicTextField(
+                                value = script,
+                                onValueChange = { script = it },
+                                visualTransformation = SyntaxTransformation,
+                                textStyle = textStyle,
+                                modifier = Modifier
+                                    .background(MyColors.fieldBackground)
+                                    .border(
+                                        width = 0.dp,
+                                        brush = SolidColor(MyColors.fieldBorder),
+                                        shape = RectangleShape
+                                    )
+                                    .onKeyEvent { keyEvent ->
+                                        if (keyEvent.key == Key.Enter) {
+                                            LineNumbers.addLine()
+                                            true
+                                        } else {
+                                            false
+                                        }
                                     }
-                                }
-                        )
+                            )
+                        }
                     }
 
 
                     Spacer(Modifier.height(10.dp))
 
                     // OutputBox
-                    BasicTextField(
-                        onTextLayout = {
-                            textLayoutResult = it
-                        },
-                        enabled = false,
-                        readOnly = true,
-                        visualTransformation = ErrorTransformation,
-                        value = output.value,
-                        textStyle = textStyle,
-                        onValueChange = { },
+                    Box(
                         modifier = Modifier
-                            .background(color = backgroundColor)
-                            .border(
-                                width = 2.dp,
-                                brush = SolidColor(borderColor),
-                                shape = RectangleShape
-                            )
-                            .fillMaxWidth(0.85f)
-                            .fillMaxHeight(0.8f)
-                            .verticalScroll(rememberScrollState())  // Enable scrolling
-                            .pointerInput(Unit) {
-                                detectTapGestures { tapOffset ->
-                                    textLayoutResult?.let { it ->
-                                        val clickedCharOffset = it.getOffsetForPosition(tapOffset)
-                                        ErrorTransformation.currentAnnotatedString?.let { annotatedString ->
-                                            annotatedString.getStringAnnotations(
-                                                tag = "CLICKABLE",
-                                                start = clickedCharOffset,
-                                                end = clickedCharOffset
-                                            ).firstOrNull()?.let {
-                                                // Parsing tag to retrieve row and col
-                                                val listError = it.item.split(":").map { str ->
-                                                    str.toInt()
+                            .background(MyColors.fieldBackground, shape = RoundedCornerShape(10.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        BasicTextField(
+                            onTextLayout = {
+                                textLayoutResult = it
+                            },
+                            enabled = false,
+                            readOnly = true,
+                            visualTransformation = ErrorTransformation,
+                            value = output.value,
+                            textStyle = textStyle,
+                            onValueChange = { },
+                            modifier = Modifier
+                                .background(color = MyColors.fieldBackground)
+                                .border(
+                                    width = 2.dp,
+                                    brush = SolidColor(MyColors.fieldBorder),
+                                    shape = RectangleShape
+                                )
+                                .fillMaxWidth(0.85f)
+                                .fillMaxHeight(0.8f)
+                                .verticalScroll(rememberScrollState())  // Enable scrolling
+                                .pointerInput(Unit) {
+                                    detectTapGestures { tapOffset ->
+                                        textLayoutResult?.let { it ->
+                                            val clickedCharOffset = it.getOffsetForPosition(tapOffset)
+                                            ErrorTransformation.currentAnnotatedString?.let { annotatedString ->
+                                                annotatedString.getStringAnnotations(
+                                                    tag = "CLICKABLE",
+                                                    start = clickedCharOffset,
+                                                    end = clickedCharOffset
+                                                ).firstOrNull()?.let {
+                                                    // Parsing tag to retrieve row and col
+                                                    val listError = it.item.split(":").map { str ->
+                                                        str.toInt()
+                                                    }
+                                                    // Determine and setting cursor position
+                                                    val row = listError.first()
+                                                    val col = if (listError.size == 2) (listError[1]) else 0
+                                                    val cursorOffset = findCursorPosition(row, col, script.text)
+                                                    script =
+                                                        script.copy(selection = TextRange(cursorOffset, cursorOffset))
                                                 }
-                                                // Determine and setting cursor position
-                                                val row = listError.first()
-                                                val col = if (listError.size == 2) (listError[1]) else 0
-                                                val cursorOffset = findCursorPosition(row, col, script.text)
-                                                script = script.copy(selection = TextRange(cursorOffset, cursorOffset))
                                             }
                                         }
                                     }
                                 }
-                            }
-                    )
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(10.dp))

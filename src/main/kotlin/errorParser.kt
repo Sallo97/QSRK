@@ -1,4 +1,3 @@
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 
@@ -44,13 +43,7 @@ object ErrorParser {
                     )
 
                     val errorRange = matchResult.groups[3]!!.range.rangeInContent(startLineIdx)
-                    val errorSegment = Segment(
-                        range = errorRange,
-                        style = SpanStyle(
-                            color = Color.Red,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
+                    val errorSegment = Segment.createErrorSegment(errorRange)
 
                     val spaceSegment2 = Segment(
                         range = IntRange(start = errorRange.last + 1, endInclusive = errorRange.last + 1),
