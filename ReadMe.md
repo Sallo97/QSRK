@@ -26,13 +26,16 @@ It is possible to compile the process manually within a terminal using `gradlew`
 ```
 
 ## Project Structure
-The project is divided in the `Main.kt` file, which handles the initialization of the GUI, and by the following packages:
-- **scriptHandler** : `ScriptHandler` and `scriptStatus` implement respectively the logic for starting the script and synchronising the script's status icon. The executing of the script is done by creating an apposite process with Java's `ProcessBuilder` API. The Standard Output and Standard Error have been merged in the same pipe for handling the error parsing. The characters coming from the stream are read greedely one at a time, in order to let the user see its execution with less delay possible. To guarantee that the GUI remains reactive during the process's execution coroutines have been used.
-- **parsing** : for handling the parsing of character the class `Segment` has been created. A `Segment` contains data regarding a range of contiguous characters in a text and how they should be stylised during their rendering. 
-    - **syntaxParsing** : The Syntax Highlighter has been implemented by `SyntaxTransformation`. Since an user can modify dynamically the edited text, it needs to re-check the whole body each time an interaction occurs. 
-    - **errorParsing:** : The parsing of errors and exception has been delegated to `errorParser` and `SyntaxTransformation`.  The first one defines methods to detect errors within lines and construct segments from them, the second handles the rendering in the output panel. Since the printed output of a process only happends text to it, instead of parsing at each update the whole text, a list contains the segments of the already parsed lines in the previous iterations. In this way the parsing speeds up significantly.
-- **guiComponents** : determine the classes and functions that are used for constructing the graphical part of the application. `MyColor` is a object used for conveniently stored the colors used throught the GUI portion. Additionally:
-    - **buttons :** defines the function for construction the play and stop buttons.
+The project is organized in the Main.kt file, which initializes the GUI, and the following packages:
+- **scriptHandler** : `ScriptHandler` and `scriptStatus` implement the logic for starting the script and synchronising the script's status icon. The executing of the script is done by creating a process with Java's `ProcessBuilder` API. The Standard Output and Standard Error have been merged into a single stream for handling the error parsing. Characters from this stream are read greedily, one at a time, to minimize delays and provide real-time feedback to the user. To guarantee that the GUI remains reactive during the process's execution, coroutines have been used.
+- **parsing** : for handling the parsing of characters the class `Segment` has been created. A `Segment` contains data regarding a range of contiguous characters in a text and how they should be stylised during their rendering. 
+    - **syntaxParsing** : Implements syntax highlighting via `SyntaxTransformation`. Since the user can dynamically modify the text, the highlighter re-parses the entire text body after each interaction.. 
+    - **errorParsing:** : The parsing of errors and exception has been delegated to `errorParser` and `SyntaxTransformation`.  
+        - `errorParser` defines methods to detect errors within lines and construct segments from them.
+        - `SyntaxTransformation` handles the rendering in the output panel. Since the printed output of a process only appends text to it, instead of parsing the whole text each time, a list containing already parsed segments is used to speed up the process significantly.
+- **guiComponents** : contains he classes and functions that are used for constructing the graphical part of the application. 
+    - `MyColor` conveniently stores the colors used throught the GUI portion. 
+    - **buttons :** provides functions for construction the play and stop buttons.
     - **fields :** defines the TextLabels composing the GUI. Notably the edit panel is actually generated as the combination of `editField` and `lineField`. The two generates two separated labels, one for writing the script and one for the numbering of the lines. The two are synchronized in a way such that when the user press either `\n` or `backspace`, `editField` gets triggered and checks if some lines have been removed or added.
 
 ## Fun Facts
