@@ -8,42 +8,15 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 
+/**
+ * Handles the parsing of the produced output of a script, marking errors and exceptions.
+ */
 object ErrorTransformation : VisualTransformation {
     private val segments: MutableList<Segment> = mutableListOf()
     var currentAnnotatedString: AnnotatedString? = null
 
     /**
-     * Resets the errorTransformation for handling a new process
-     */
-    private fun reset() {
-        segments.clear()
-    }
-
-    /**
-     * Appends the segments
-     */
-    private fun appendSegment(segment: Segment, builder: AnnotatedString.Builder, rawText: String) {
-        if (segment.clickable) {
-            val annotationData = rawText.substring(segment.range)
-                .substringAfterLast(".kts:")
-                .substringBeforeLast(":")
-            builder.pushStringAnnotation(tag = "CLICKABLE", annotation = annotationData)
-            builder.withStyle(style = segment.style) {
-                append(text = rawText.substring(segment.range))
-            }
-            builder.pop()
-        } else {
-            builder.append(
-                AnnotatedString(
-                    text = rawText.substring(segment.range),
-                    spanStyle = segment.style
-                )
-            )
-        }
-    }
-
-    /**
-     * Handles the colouring of the text.
+     * Handles the parsing of [text], marking errors and exceptions as they are appended.
      */
     override fun filter(text: AnnotatedString): TransformedText {
         val rawText = text.text
@@ -83,5 +56,37 @@ object ErrorTransformation : VisualTransformation {
                 return TransformedText(it, OffsetMapping.Identity)
             }
         return TransformedText(text, OffsetMapping.Identity)
+    }
+
+
+    /**
+     * Resets the errorTransformation for handling a new process.
+     */
+    private fun reset() {
+        segments.clear()
+    }
+
+    /**
+     * Given a [segment] it handles the insertion of the associated characters in [rawText] with the correct styling
+     * into [builder].
+     */
+    private fun appendSegment(segment: Segment, builder: AnnotatedString.Builder, rawText: String) {
+        if (segment.clickable) {
+            val annotationData = rawText.substring(segment.range)
+                .substringAfterLast(".kts:")
+                .substringBeforeLast(":")
+            builder.pushStringAnnotation(tag = "CLICKABLE", annotation = annotationData)
+            builder.withStyle(style = segment.style) {
+                append(text = rawText.substring(segment.range))
+            }
+            builder.pop()
+        } else {
+            builder.append(
+                AnnotatedString(
+                    text = rawText.substring(segment.range),
+                    spanStyle = segment.style
+                )
+            )
+        }
     }
 }
