@@ -23,7 +23,7 @@ object ErrorParser {
     }
 
     /**
-     * Parses [line], modifying the content and setting the style accordingly.
+     * Parses [line], creating a list of segments for stylising said line.
      */
     fun parseLine(line: String, startLineIdx: Int = 0): List<Segment> {
 
@@ -66,7 +66,6 @@ object ErrorParser {
                     val startRange = matchResult.groups[1]!!.range.rangeInContent(startLineIdx)
                     val startSegment = Segment(
                         range = startRange,
-                        style = SpanStyle(fontWeight = FontWeight.Bold)
                     )
 
                     val clickableRange = IntRange(
@@ -117,14 +116,14 @@ enum class LineType {
                 }
             }
 
-        /**
-         * Given a [line] of type replace the full path to the temp file
-         * with `script.kts`
-         */
-        fun replacePath(line: String): String? = when (fromLine(line)) {
-            ERROR -> line.replace(ERROR_REGEX, "script.kts$2 $3 $4")
-            EXCEPTION -> line.replace(EXCEPTION_REGEX, "$1Script$3(script.kts$5$6$7")
-            else -> null
-        }
+//        /**
+//         * Given a [line] of type replace the full path to the temp file
+//         * with `script.kts`
+//         */
+//        fun replacePath(line: String): String? = when (fromLine(line)) {
+//            ERROR -> line.replace(ERROR_REGEX, "script.kts$2 $3 $4")
+//            EXCEPTION -> line.replace(EXCEPTION_REGEX, "$1Script$3(script.kts$5$6$7")
+//            else -> null
+//        }
     }
 }

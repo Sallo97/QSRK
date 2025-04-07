@@ -2,14 +2,10 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -22,7 +18,6 @@ import guiComponents.buttons.stopButton
 import guiComponents.fields.editField
 import guiComponents.fields.lineField
 import guiComponents.fields.outputField
-import parsing.syntaxParsing.SyntaxTransformation
 import scriptHandler.ScriptStatus
 
 data object LineNumbers{

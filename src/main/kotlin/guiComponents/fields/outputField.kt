@@ -60,7 +60,7 @@ fun outputField(
                             ).firstOrNull()?.let {
                                 // Parsing tag to retrieve row and col
                                 val listError = it.item.split(":").map { str ->
-                                    str.toInt()
+                                    str.substringBefore(")").toInt()
                                 }
                                 // Determine and setting cursor position
                                 val row = listError.first()
@@ -82,8 +82,8 @@ fun outputField(
  */
 private fun findCursorPosition(row: Int, col: Int = 0, text: String): Int {
     // Retrieving actual position
-    val realRow = row - 1
-    val realCol = col - 1
+    val realRow = if (row != 0) row - 1 else 0
+    val realCol = if (col != 0) col - 1 else 0
     var offsetRow = 0
     val lines = text.lines()
     for (i in 0..<realRow)
