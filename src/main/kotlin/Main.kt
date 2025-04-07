@@ -19,10 +19,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import guiComponents.buttons.playButton
 import guiComponents.buttons.stopButton
+import guiComponents.fields.lineField
 import guiComponents.fields.outputField
 import parsing.syntaxParsing.SyntaxTransformation
 import scriptHandler.ScriptStatus
-
 
 data object LineNumbers{
     var text: String = "1"
@@ -32,7 +32,6 @@ fun LineNumbers.addLine(){
     count ++
     text += "\n${count}"
 }
-
 
 @Composable
 @Preview
@@ -67,22 +66,7 @@ fun App() {
                             .verticalScroll(rememberScrollState())  // Enable scrolling
                     ) {
                         Row {
-                            // LineBox
-                            BasicTextField(
-                                value = LineNumbers.text,
-                                readOnly = true,
-                                onValueChange = { },
-                                textStyle = textStyle,
-                                modifier = Modifier
-                                    .background(MyColors.fieldBackground)
-                                    .border(
-                                        width = 2.dp,
-                                        brush = SolidColor(MyColors.fieldBorder),
-                                        shape = RectangleShape
-                                    )
-                                    .fillMaxWidth(0.04f)
-                                    .fillMaxHeight()
-                            )
+                            lineField(textStyle)
 
                             // ScriptBox
                             BasicTextField(
