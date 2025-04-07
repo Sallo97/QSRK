@@ -25,9 +25,34 @@ data object LineNumbers{
     var text: String = "1"
     var count: Int = 1
 }
+
+fun LineNumbers.removeLine() {
+    count --
+    text = text.substringBeforeLast("\n")
+}
+
 fun LineNumbers.addLine(){
     count ++
     text += "\n${count}"
+}
+fun LineNumbers.updateLines(text: String, lineText: MutableState<String>) {
+    text.lines().size.apply {
+        // Case we need to add more lines
+        if (count < this){
+            for (i in 1..(this - count)) {
+                addLine()
+                lineText.value += "\n${count}"
+            }
+        }
+
+        // Case we need to remove lines
+        else {
+            for (i in 1..(count - this)) {
+                removeLine()
+                lineText.value = lineText.value.substringBeforeLast("\n")
+            }
+        }
+    }
 }
 
 @Composable
@@ -40,6 +65,7 @@ fun App() {
         val status = remember { mutableStateOf(ScriptStatus()) }
         val currentProcess: MutableState<Process?> = remember { mutableStateOf(null) }
         val textLayoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+        val lineText = remember { mutableStateOf("1") }
 
         val textStyle = TextStyle(color = Color.LightGray, fontFamily = FontFamily.Monospace)
 
@@ -65,8 +91,8 @@ fun App() {
                             .verticalScroll(rememberScrollState())  // Enable scrolling
                     ) {
                         Row {
-                            lineField(textStyle)
-                            editField(script,textStyle)
+                            lineField(textStyle, lineText)
+                            editField(script,textStyle, lineText)
                         }
                     }
 

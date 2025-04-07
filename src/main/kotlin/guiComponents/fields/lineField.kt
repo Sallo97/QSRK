@@ -1,11 +1,13 @@
 package guiComponents.fields
 
+import LineNumbers
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
@@ -15,10 +17,12 @@ import guiComponents.MyColors
 
 
 @Composable
-inline fun lineField(textStyle: TextStyle) {
+inline fun lineField(
+    textStyle: TextStyle,
+    lineText: MutableState<String>) {
     // LineBox
     BasicTextField(
-        value = LineNumbers.text,
+        value = lineText.value,
         readOnly = true,
         onValueChange = { },
         textStyle = textStyle,

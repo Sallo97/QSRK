@@ -1,5 +1,6 @@
 package guiComponents.fields
 
+import LineNumbers
 import guiComponents.MyColors
 import addLine
 import androidx.compose.foundation.background
@@ -17,11 +18,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import parsing.syntaxParsing.SyntaxTransformation
+import updateLines
 
 @Composable
 inline fun editField(
     script: MutableState<TextFieldValue>,
     textStyle: TextStyle,
+    lineText: MutableState<String>
 
 ) {
     BasicTextField(
@@ -38,9 +41,9 @@ inline fun editField(
                 shape = RectangleShape
             )
             .onKeyEvent { keyEvent ->
-                if (keyEvent.key == Key.Enter) {
-                    LineNumbers.addLine()
-                    true
+                if (keyEvent.key == Key.Enter || keyEvent.key == Key.Backspace) {
+                    LineNumbers.updateLines(script.value.text, lineText)
+                    false
                 } else {
                     false
                 }
