@@ -32,10 +32,12 @@ fun isMissingCompiler(line: String?): Boolean = LineType.fromLine(line) == LineT
 object ErrorParser {
     /**
      * Given a range obtained within a single line, returns the new range of said line within the [offset]
-     * where it is found in content.
+     * where it is found in content. If it is the last segment of a line it also counts the LF.
      */
-    private fun IntRange.rangeInContent(offset: Int): IntRange =
-        IntRange(first + offset, last + offset)
+    private fun IntRange.rangeInContent(offset: Int, isLastSegment: Boolean = false): IntRange {
+        val newLast = if (isLastSegment) last + 1 else last
+        return IntRange(first + offset, newLast + offset)
+    }
 
     /**
      * Parses [line], modifying the content and setting the style accordingly.
@@ -74,12 +76,8 @@ object ErrorParser {
                         style = SpanStyle(fontWeight = FontWeight.Bold)
                     )
 
-                    val remainderRange = matchResult.groups[4]!!.range.rangeInContent(startLineIdx)
-                    val realRemainderRange = IntRange (
-                        start = remainderRange.first,
-                        endInclusive = remainderRange.last + 1
-                    )
-                    val remainderSegment = Segment (range = realRemainderRange)
+                    val remainderRange = matchResult.groups[4]!!.range.rangeInContent(startLineIdx, true)
+                    val remainderSegment = Segment (range = remainderRange)
 
                     listOf(clickableSegment, spaceSegment1, errorSegment, spaceSegment2, remainderSegment)
                 }
@@ -100,27 +98,17 @@ object ErrorParser {
                     ).rangeInContent(startLineIdx)
                     val clickableSegment = Segment.createClickableSegment(clickableRange)
 
-                    val remainderRange = matchResult.groups[7]!!.range.rangeInContent(startLineIdx)
-                    val realRemainderRange = IntRange (
-                        start = remainderRange.first,
-                        endInclusive = remainderRange.last + 1
-                    )
+                    val remainderRange = matchResult.groups[7]!!.range.rangeInContent(startLineIdx, true)
                     val remainderSegment = Segment(
-                        range = realRemainderRange,
+                        range = remainderRange,
                     )
 
                     listOf(startSegment, clickableSegment, remainderSegment)
                 }
 
                 else -> {
-                    val segmentRange = IntRange(0, line.lastIndex).rangeInContent(startLineIdx)
-                    val segment = Segment(
-                        range =
-                            IntRange(
-                                start = segmentRange.first,
-                                endInclusive = segmentRange.last + 1
-                            )
-                    )
+                    val segmentRange = IntRange(0, line.lastIndex).rangeInContent(startLineIdx, true)
+                    val segment = Segment(range = segmentRange)
                     listOf(segment)
                 }
             }
