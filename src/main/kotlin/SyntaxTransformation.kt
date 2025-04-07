@@ -10,7 +10,7 @@ import androidx.compose.ui.text.input.VisualTransformation
  */
 object SyntaxTransformation : VisualTransformation {
     private val tokens = listOf(
-        "as", "break", "class", "else", "false", "for", "fun", "val",
+        "as", "break", "class", "else", "false", "for", "fun", "val", "println",
         "if", "interface", "object", "data", "true", "null", "return", "error", "while"
     )
 
@@ -85,7 +85,7 @@ object SyntaxTransformation : VisualTransformation {
      */
     private fun parseWord(word: String, range: IntRange): Segment =
         if (word in tokens)
-            Segment.syntaxSegment(range = range)
+            Segment.createSyntaxSegment(range = range)
         else
             Segment(range = range)
 }
