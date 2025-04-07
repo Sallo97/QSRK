@@ -11,20 +11,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
+
+data object LineNumbers{
+    var text: String = "1"
+    var count: Int = 1
+}
+fun LineNumbers.addLine(){
+    count ++
+    text += "\n${count}"
+}
+
 
 @Composable
 @Preview
@@ -37,6 +49,10 @@ fun App() {
         val currentProcess: MutableState<Process?> = remember { mutableStateOf(null) }
         var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
+        val textStyle = TextStyle(color = Color.LightGray, fontFamily = FontFamily.Monospace)
+        val backgroundColor = Color.DarkGray
+        val borderColor = Color.Transparent
+
         BoxWithConstraints {
 //            val windowHeight = maxHeight
 //            val windowWidth = maxWidth
@@ -47,20 +63,49 @@ fun App() {
                 Column {
                     Spacer(Modifier.height(10.dp))
 
-                    // ScriptBox
-                    BasicTextField(
-                        value = script,
-                        onValueChange = { script = it },
-                        modifier = Modifier
-                            .background(color = Color.LightGray)
-                            .border(
-                                width = 2.dp,
-                                brush = SolidColor(Color.DarkGray),
-                                shape = RectangleShape
-                            )
-                            .fillMaxWidth(0.85f)
-                            .fillMaxHeight(0.8f)
-                    )
+                    Row{
+                        // ScriptBox
+                        BasicTextField(
+                            value = LineNumbers.text,
+                            readOnly = true,
+                            onValueChange = {  },
+                            textStyle = textStyle,
+                            modifier = Modifier
+                                .background(backgroundColor)
+                                .border(
+                                    width = 2.dp,
+                                    brush = SolidColor(borderColor),
+                                    shape = RectangleShape
+                                )
+                                .fillMaxWidth(0.025f)
+                                .fillMaxHeight(0.8f)
+                        )
+
+                        // ScriptBox
+                        BasicTextField(
+                            value = script,
+                            onValueChange = { script = it },
+                            textStyle = textStyle,
+                            modifier = Modifier
+                                .background(backgroundColor)
+                                .border(
+                                    width = 0.dp,
+                                    brush = SolidColor(borderColor),
+                                    shape = RectangleShape
+                                )
+                                .fillMaxWidth(0.85f)
+                                .fillMaxHeight(0.8f)
+                                .onKeyEvent { keyEvent ->
+                                    if (keyEvent.key == Key.Enter){
+                                        LineNumbers.addLine()
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                }
+                        )
+                    }
+
 
                     Spacer(Modifier.height(10.dp))
 
@@ -73,12 +118,13 @@ fun App() {
                         readOnly = true,
                         visualTransformation = ErrorTransformation,
                         value = output.value,
+                        textStyle = textStyle,
                         onValueChange = { },
                         modifier = Modifier
-                            .background(color = Color.LightGray)
+                            .background(color = backgroundColor)
                             .border(
                                 width = 2.dp,
-                                brush = SolidColor(Color.DarkGray),
+                                brush = SolidColor(borderColor),
                                 shape = RectangleShape
                             )
                             .fillMaxWidth(0.85f)

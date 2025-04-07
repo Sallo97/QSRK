@@ -12,14 +12,13 @@ data class Segment(val range: IntRange, val style: SpanStyle = SpanStyle(), val 
         fun createClickableSegment(range: IntRange): Segment = Segment(
             range = range,
             style = SpanStyle(
-                color = Color.Blue,
+                color = Color.Cyan,
                 textDecoration = TextDecoration.Underline
             ),
             clickable = true
         )
     }
 }
-
 
 /**
  * Returns true if [line] indicated that the user misses the `kotlinc` compiler, false otherwise
@@ -42,7 +41,7 @@ object ErrorParser {
     /**
      * Parses [line], modifying the content and setting the style accordingly.
      */
-    fun parseLine(line: String, startLineIdx: Int = 0) : List<Segment> {
+    fun parseLine(line: String, startLineIdx: Int = 0): List<Segment> {
 
         // Update content by replacing the name to the temp file in the lines with `script.kts`
         val newSegments =
@@ -51,7 +50,7 @@ object ErrorParser {
                     // val newLine = LineType.replacePath(lineType, line)!!
                     val matchResult = LineType.ERROR_REGEX.find(line)!!
 
-                    val clickableRange = IntRange (
+                    val clickableRange = IntRange(
                         start = matchResult.groups[1]!!.range.first,
                         endInclusive = matchResult.groups[2]!!.range.last
                     ).rangeInContent(startLineIdx)
@@ -59,7 +58,7 @@ object ErrorParser {
                     val clickableSegment = Segment.createClickableSegment(clickableRange)
 
                     val spaceSegment1 = Segment(
-                        range = IntRange(start = clickableRange.last+1, endInclusive = clickableRange.last+1)
+                        range = IntRange(start = clickableRange.last + 1, endInclusive = clickableRange.last + 1)
                     )
 
                     val errorRange = matchResult.groups[3]!!.range.rangeInContent(startLineIdx)
@@ -72,12 +71,12 @@ object ErrorParser {
                     )
 
                     val spaceSegment2 = Segment(
-                        range = IntRange(start = errorRange.last+1, endInclusive = errorRange.last+1),
+                        range = IntRange(start = errorRange.last + 1, endInclusive = errorRange.last + 1),
                         style = SpanStyle(fontWeight = FontWeight.Bold)
                     )
 
                     val remainderRange = matchResult.groups[4]!!.range.rangeInContent(startLineIdx, true)
-                    val remainderSegment = Segment (range = remainderRange)
+                    val remainderSegment = Segment(range = remainderRange)
 
                     listOf(clickableSegment, spaceSegment1, errorSegment, spaceSegment2, remainderSegment)
                 }
@@ -87,7 +86,7 @@ object ErrorParser {
                     val matchResult = LineType.EXCEPTION_REGEX.find(line)!!
 
                     val startRange = matchResult.groups[1]!!.range.rangeInContent(startLineIdx)
-                    val startSegment = Segment (
+                    val startSegment = Segment(
                         range = startRange,
                         style = SpanStyle(fontWeight = FontWeight.Bold)
                     )
@@ -145,9 +144,9 @@ enum class LineType {
          * with `script.kts`
          */
         fun replacePath(line: String): String? = when (fromLine(line)) {
-                ERROR -> line.replace(LineType.ERROR_REGEX, "script.kts$2 $3 $4")
-                EXCEPTION -> line.replace(LineType.EXCEPTION_REGEX, "$1Script$3(script.kts$5$6$7")
-                else -> null
-            }
+            ERROR -> line.replace(LineType.ERROR_REGEX, "script.kts$2 $3 $4")
+            EXCEPTION -> line.replace(LineType.EXCEPTION_REGEX, "$1Script$3(script.kts$5$6$7")
+            else -> null
+        }
     }
 }

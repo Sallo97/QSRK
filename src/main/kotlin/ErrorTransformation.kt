@@ -1,7 +1,9 @@
-import androidx.compose.ui.text.*
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
 
 object ErrorTransformation : VisualTransformation {
     private val segments: MutableList<Segment> = mutableListOf()
@@ -18,8 +20,8 @@ object ErrorTransformation : VisualTransformation {
     /**
      * Appends the segments
      */
-    private fun appendSegment(segment:Segment, builder:AnnotatedString.Builder, rawText: String){
-        if (segment.clickable){
+    private fun appendSegment(segment: Segment, builder: AnnotatedString.Builder, rawText: String) {
+        if (segment.clickable) {
             val annotationData = rawText.substring(segment.range)
                 .substringAfterLast(".kts:")
                 .substringBeforeLast(":")
@@ -71,7 +73,7 @@ object ErrorTransformation : VisualTransformation {
                     }
                 }
 
-                if(lastIdx < rawText.length) {
+                if (lastIdx < rawText.length) {
                     append(rawText.substring(lastIdx))
                 }
             }.also {
