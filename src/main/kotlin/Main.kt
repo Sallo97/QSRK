@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -22,15 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import guiComponents.buttons.playButton
+import guiComponents.buttons.stopButton
 import parsing.errorParsing.ErrorTransformation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import parsing.syntaxParsing.SyntaxTransformation
 import scriptHandler.ScriptStatus
-import scriptHandler.executeScript
-import java.nio.file.attribute.PosixFilePermissions
-import kotlin.io.path.createTempFile
-import kotlin.io.path.writeText
+
 
 data object LineNumbers{
     var text: String = "1"
@@ -187,28 +182,8 @@ fun App() {
                         currentProcess,
                         script
                     )
-
                     Spacer(Modifier.height(10.dp))
-
-                    // StopButton
-                    Button(
-                        onClick = {
-                            scope.launch(Dispatchers.Default) {
-                                terminateProcess(currentProcess)
-
-                            }
-                        },
-                        content = {
-                            Image(
-                                painter = painterResource("drawable/stopButton.svg"),
-                                contentDescription = "button icon",
-                                modifier = Modifier.size(100.dp)
-                            )
-                        },
-                        modifier = Modifier
-                            .size(100.dp)
-                    )
-
+                    stopButton(scope,currentProcess)
                     Spacer(Modifier.height(10.dp))
 
                     // StatusIcon
@@ -240,51 +215,6 @@ private fun findCursorPosition(row: Int, col: Int = 0, text: String): Int {
     return offsetRow + realCol
 
 }
-
-/**
- * Aborts the [currentProcess] if it exists.
- */
-private fun terminateProcess(currentProcess: MutableState<Process?>) = currentProcess.value?.destroyForcibly()
-
-/**
- * executes the [body] as a Kotlin script, updating the [output] Text Label
- * accordingly.
- */
-private fun scriptExecution(
-    output: MutableState<String>,
-    body: String,
-    status: MutableState<ScriptStatus>,
-    currentProcess: MutableState<Process?>
-) {
-    output.value = ""
-
-    // Save the content of body in the file tempScript.kts
-    val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
-    val tempFile = createTempFile(
-        prefix = "tempScript",
-        suffix = ".kts",
-        PosixFilePermissions.asFileAttribute(permissions)
-    ).also {
-        it.toFile().deleteOnExit()
-        it.writeText(text = body)
-    }
-
-    status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
-
-    // Create a process for said file and prints its execution in the terminal
-    val exitStatus = executeScript(
-        source = tempFile.toString(),
-        content = output,
-        currentProcess
-    )
-
-    // General updates after process termination
-    val exitMessage = "\nScript terminated with exit status: $exitStatus"
-    output.value += exitMessage
-    status.value = ScriptStatus.fromExitStatus(exitStatus)
-    currentProcess.value = null
-}
-
 
 fun main() =
     application {
