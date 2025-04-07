@@ -75,7 +75,11 @@ object ErrorParser {
                     )
 
                     val remainderRange = matchResult.groups[4]!!.range.rangeInContent(startLineIdx)
-                    val remainderSegment = Segment (range = remainderRange)
+                    val realRemainderRange = IntRange (
+                        start = remainderRange.first,
+                        endInclusive = remainderRange.last + 1
+                    )
+                    val remainderSegment = Segment (range = realRemainderRange)
 
                     listOf(clickableSegment, spaceSegment1, errorSegment, spaceSegment2, remainderSegment)
                 }
@@ -96,10 +100,13 @@ object ErrorParser {
                     ).rangeInContent(startLineIdx)
                     val clickableSegment = Segment.createClickableSegment(clickableRange)
 
-                    val remainderRanger = matchResult.groups[7]!!.range.rangeInContent(startLineIdx)
+                    val remainderRange = matchResult.groups[7]!!.range.rangeInContent(startLineIdx)
+                    val realRemainderRange = IntRange (
+                        start = remainderRange.first,
+                        endInclusive = remainderRange.last + 1
+                    )
                     val remainderSegment = Segment(
-                        range = remainderRanger,
-                        style = SpanStyle(fontWeight = FontWeight.Bold)
+                        range = realRemainderRange,
                     )
 
                     listOf(startSegment, clickableSegment, remainderSegment)
@@ -107,7 +114,13 @@ object ErrorParser {
 
                 else -> {
                     val segmentRange = IntRange(0, line.lastIndex).rangeInContent(startLineIdx)
-                    val segment = Segment(range = segmentRange)
+                    val segment = Segment(
+                        range =
+                            IntRange(
+                                start = segmentRange.first,
+                                endInclusive = segmentRange.last + 1
+                            )
+                    )
                     listOf(segment)
                 }
             }
