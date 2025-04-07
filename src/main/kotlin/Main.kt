@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import guiComponents.buttons.playButton
 import parsing.errorParsing.ErrorTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -179,23 +180,12 @@ fun App() {
                 Column {
                     Spacer(Modifier.height(10.dp))
 
-                    // PlayButton
-                    Button(
-                        enabled = status.value.statusType != ScriptStatus.StatusType.RUNNING,
-                        onClick = {
-                            scope.launch(Dispatchers.IO) {
-                                scriptExecution(output, script.text, status, currentProcess)
-                            }
-                        },
-                        content = {
-                            Image(
-                                painter = painterResource("drawable/playButton.svg"),
-                                contentDescription = "button icon",
-                                modifier = Modifier.size(100.dp)
-                            )
-                        },
-                        modifier = Modifier
-                            .size(100.dp)
+                    playButton(
+                        status,
+                        scope,
+                        output,
+                        currentProcess,
+                        script
                     )
 
                     Spacer(Modifier.height(10.dp))
