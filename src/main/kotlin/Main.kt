@@ -19,6 +19,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import guiComponents.buttons.playButton
 import guiComponents.buttons.stopButton
+import guiComponents.fields.editField
 import guiComponents.fields.lineField
 import guiComponents.fields.outputField
 import parsing.syntaxParsing.SyntaxTransformation
@@ -55,6 +56,8 @@ fun App() {
 
             Row {
                 Spacer(Modifier.width(10.dp))
+
+                // Fields
                 Column {
                     Spacer(Modifier.height(10.dp))
                     Box(
@@ -67,36 +70,12 @@ fun App() {
                     ) {
                         Row {
                             lineField(textStyle)
-
-                            // ScriptBox
-                            BasicTextField(
-                                value = script.value,
-                                onValueChange = { script.value = it },
-                                visualTransformation = SyntaxTransformation,
-                                textStyle = textStyle,
-                                modifier = Modifier
-                                    .background(MyColors.fieldBackground)
-                                    .border(
-                                        width = 0.dp,
-                                        brush = SolidColor(MyColors.fieldBorder),
-                                        shape = RectangleShape
-                                    )
-                                    .onKeyEvent { keyEvent ->
-                                        if (keyEvent.key == Key.Enter) {
-                                            LineNumbers.addLine()
-                                            true
-                                        } else {
-                                            false
-                                        }
-                                    }
-                            )
+                            editField(script,textStyle)
                         }
                     }
 
-
                     Spacer(Modifier.height(10.dp))
 
-                    // OutputBox
                     Box(
                         modifier = Modifier
                             .background(MyColors.fieldBackground, shape = RoundedCornerShape(10.dp))
@@ -113,6 +92,7 @@ fun App() {
 
                 Spacer(modifier = Modifier.width(10.dp))
 
+                // Buttons
                 Column {
                     Spacer(Modifier.height(10.dp))
                     playButton(
