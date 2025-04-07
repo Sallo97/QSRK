@@ -4,21 +4,19 @@ import androidx.compose.runtime.MutableState
 import parsing.errorParsing.isMissingCompiler
 import java.io.IOException
 
-/**
- * This file handle the execution of the written script, creating the associated process, parsing the output and checking
- * the process's termination.
- */
-
 
 /**
- * Handles the execution of the Kotlin's script pointed by [source].
+ * Sets [currentProcess] as a new process pointed by [source].
+ * Manages the whole execution of the process, handling the reading of the characters coming from both the Standard
+ * Output and Standard Error.
+ * Returns the exitStatus by which the process terminates.
  */
-fun executeScript(
+fun manageExecution(
     source: String, content: MutableState<String>,
     currentProcess: MutableState<Process?>,
 ): Int {
 
-    // Initialising process
+    // Creating the process
     try {
         val script = ProcessBuilder("kotlinc", "-script", source)
             .redirectErrorStream(true)
@@ -29,20 +27,13 @@ fun executeScript(
 
         // Reading the output stream
         script.inputReader().use { outReader ->
-            val line = StringBuilder()
             var nextChar: Char
             while (outReader.read().apply { nextChar = this.toChar() } != -1) {
-                line.append(nextChar)
                 content.value += nextChar
-
-                // Checking line
-                if (nextChar == '\n' || nextChar == '\r') {
-                    line.clear()
-                }
             }
         }
 
-        // Check existStatus
+        // Wait for process completion
         return script.waitFor()
 
     } catch (ioExc: IOException) {

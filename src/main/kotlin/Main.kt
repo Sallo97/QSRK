@@ -24,11 +24,18 @@ import guiComponents.fields.lineField
 import guiComponents.fields.outputField
 import scriptHandler.ScriptStatus
 
+/**
+ * The following class handles the updating of the numbered lines in the output panel.
+ */
 class LineNumbers(val lineText: MutableState<String>) {
     private var count: Int = 1
+
+    /**
+     * Updates the number lines in the output panel in order to match the number of lines in [text].
+     */
     fun updateLines(text: String) {
         text.lines().size.apply {
-            // Case we need to add more lines
+            // Case: we need to add more lines
             if (count < this) {
                 for (i in 1..(this - count)) {
                     count++
@@ -36,7 +43,7 @@ class LineNumbers(val lineText: MutableState<String>) {
                 }
             }
 
-            // Case we need to remove lines
+            // Case: we need to remove lines
             else {
                 for (i in 1..(count - this)) {
                     count--
@@ -48,10 +55,15 @@ class LineNumbers(val lineText: MutableState<String>) {
 }
 
 
+
 @Composable
 @Preview
 fun App() {
-
+    /**
+     * Constructs the GUI application. QSRK! is mainly composed of a row containing two column:
+     * - the first one defines the edit panel (which also considers a line panel) and output panel.
+     * - the second one defines the play and stop buttons and the status icon.
+     */
     MaterialTheme {
         val script = remember { mutableStateOf(TextFieldValue(text = "Write your script here!")) }
         val output = remember { mutableStateOf("The output of you script will be printed here!") }
@@ -59,7 +71,6 @@ fun App() {
         val currentProcess: MutableState<Process?> = remember { mutableStateOf(null) }
         val textLayoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
         val lineNumbers = LineNumbers(remember { mutableStateOf("1") })
-
         val textStyle = TextStyle(color = Color.LightGray, fontFamily = FontFamily.Monospace)
 
         BoxWithConstraints(
@@ -70,11 +81,14 @@ fun App() {
             val scope = rememberCoroutineScope()
 
             Row {
+
                 Spacer(Modifier.width(10.dp))
 
-                // Fields
+                // Panels construction
                 Column {
                     Spacer(Modifier.height(10.dp))
+
+                    // Line Panel + Edit Panel constructions
                     Box(
                         modifier = Modifier
                             .background(MyColors.fieldBackground, shape = RoundedCornerShape(10.dp))
@@ -91,6 +105,7 @@ fun App() {
 
                     Spacer(Modifier.height(10.dp))
 
+                    // Output Panel construction
                     Box(
                         modifier = Modifier
                             .background(MyColors.fieldBackground, shape = RoundedCornerShape(10.dp))
@@ -107,7 +122,7 @@ fun App() {
 
                 Spacer(modifier = Modifier.width(10.dp))
 
-                // Buttons
+                // Buttons constructions
                 Column {
                     Spacer(Modifier.height(10.dp))
                     playButton(

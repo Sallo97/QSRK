@@ -13,7 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import scriptHandler.ScriptStatus
-import scriptHandler.executeScript
+import scriptHandler.manageExecution
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.writeText
 
@@ -69,7 +69,7 @@ private fun scriptExecution(
     status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
 
     // Create a process for said file and prints its execution in the terminal
-    val exitStatus = executeScript(
+    val exitStatus = manageExecution(
         source = tempFile.toString(),
         content = output,
         currentProcess

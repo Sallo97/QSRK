@@ -1,5 +1,5 @@
 # QSRK!
-**QSRK!** (**Q**uick **S**cript **R**unner for **K**otlin!) is a simple GUI application that lets users write, run, stop, and read in real-time the output of a Kotlin script.
+**QSRK!** (**Q**uick **S**cript **R**unner for **K**otlin!) is a simple GUI Desktop application developed using Compose Multiplatform that lets users write, run, stop, and read in real-time the output of a Kotlin script.
 
 ## Features
 - Write Kotlin script in the edit panel supporting basic syntax highlighting for common language constructs.
@@ -8,7 +8,7 @@
 - In case Kotlin's errors or Java exceptions are generated during execution, they are printed by the output panel and highlighed, permitting user to see them. Additionally it's possible to click them to focus the editor cursor on the associated line.
 
 ## Supported Operating Systems
-At the time of writing the application has only been tested on a MacBook Pro M2 with macOS Sequoia 15.4 (ARM64).
+At the time of writing the application has been tested on a MacBook Pro M2 with macOS Sequoia 15.4 (ARM64).
 
 ## Building and Execution
 It's possible to compile and execute the application either within the IDE *IntelliJ IDEA* or manually using `gradlew`.
