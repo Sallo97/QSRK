@@ -22,8 +22,11 @@ import androidx.compose.ui.unit.dp
 import guiComponents.MyColors
 import parsing.errorParsing.ErrorTransformation
 
+/**
+ * Creates the panel for seeing in real-time output of an executing script.
+ */
 @Composable
-fun outputField(
+fun outputPanel(
     textLayoutResult: MutableState<TextLayoutResult?>,
     output: MutableState<String>,
     textStyle: TextStyle,
@@ -50,16 +53,18 @@ fun outputField(
             .fillMaxHeight(0.8f)
             .verticalScroll(rememberScrollState())  // Enable scrolling
             .pointerInput(Unit) {
+                // Logic for handling the clicking of errors
                 detectTapGestures { tapOffset ->
                     textLayoutResult.let { it ->
                         val clickedCharOffset = it.value!!.getOffsetForPosition(tapOffset)
                         ErrorTransformation.currentAnnotatedString?.let { annotatedString ->
+                            // Check if the tag matches
                             annotatedString.getStringAnnotations(
                                 tag = "CLICKABLE",
                                 start = clickedCharOffset,
                                 end = clickedCharOffset
                             ).firstOrNull()?.let {
-                                // Parsing tag to retrieve row and col
+                                // Parsing tag to retrieve row and col (if exists) of the error/exception
                                 val listError = it.item.split(":").map { str ->
                                     str.substringBefore(")").toInt()
                                 }
@@ -79,7 +84,7 @@ fun outputField(
 
 /**
  * Given the [row] and [col] of an error description referring to [text], returns the exact cursor position the error
- * refers to
+ * refers to.
  */
 private fun findCursorPosition(row: Int, col: Int = 0, text: String): Int {
     // Retrieving actual position

@@ -14,7 +14,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import guiComponents.MyColors
 
-
+/**
+ * Creates the panel that numbers the lines of the current written script.
+ */
 @Composable
 inline fun lineField(
     textStyle: TextStyle,

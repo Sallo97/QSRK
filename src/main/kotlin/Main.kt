@@ -21,7 +21,7 @@ import guiComponents.buttons.playButton
 import guiComponents.buttons.stopButton
 import guiComponents.fields.editField
 import guiComponents.fields.lineField
-import guiComponents.fields.outputField
+import guiComponents.fields.outputPanel
 import scriptHandler.ScriptStatus
 
 /**
@@ -111,7 +111,7 @@ fun App() {
                             .background(MyColors.fieldBackground, shape = RoundedCornerShape(10.dp))
                             .padding(horizontal = 12.dp, vertical = 8.dp)
                     ) {
-                        outputField(
+                        outputPanel(
                             textLayoutResult,
                             output,
                             textStyle,

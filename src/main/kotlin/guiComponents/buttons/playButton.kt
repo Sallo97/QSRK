@@ -17,6 +17,9 @@ import scriptHandler.manageExecution
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.writeText
 
+/**
+ * Defines the play button which is used for start executing the written script.
+ */
 @Composable
 fun playButton(
     status: MutableState<ScriptStatus>,
@@ -44,8 +47,8 @@ fun playButton(
 }
 
 /**
- * executes the [body] as a Kotlin script, updating the [output] Text Label
- * accordingly.
+ * Prepare the execution for [body] as a Kotlin script, resetting [output] accordingly, updating [status] and setting
+ * the process as the [currentProcess].
  */
 private fun scriptExecution(
     output: MutableState<String>,
@@ -66,6 +69,7 @@ private fun scriptExecution(
         it.writeText(text = body)
     }
 
+    // Set the status as `RUNNING`
     status.value = ScriptStatus(ScriptStatus.StatusType.RUNNING)
 
     // Create a process for said file and prints its execution in the terminal

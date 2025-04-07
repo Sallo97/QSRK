@@ -12,6 +12,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+/**
+ * Defines the stop button of the GUI. When pressed if a process in running, it aborts it, otherwise it does nothing.
+ */
 @Composable
 fun stopButton(
     scope: CoroutineScope,
@@ -38,6 +41,6 @@ fun stopButton(
 }
 
 /**
- * Aborts the [currentProcess] if it exists.
+ * Aborts the [currentProcess] if it exists, otherwise does nothing.
  */
 private fun terminateProcess(currentProcess: MutableState<Process?>) = currentProcess.value?.destroyForcibly()
