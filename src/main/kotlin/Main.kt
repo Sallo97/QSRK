@@ -25,7 +25,7 @@ import guiComponents.fields.outputField
 import scriptHandler.ScriptStatus
 
 class LineNumbers(val lineText: MutableState<String>) {
-    var count: Int = 1
+    private var count: Int = 1
     fun updateLines(text: String) {
         text.lines().size.apply {
             // Case we need to add more lines
