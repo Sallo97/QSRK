@@ -19,10 +19,10 @@ import guiComponents.MyColors
 @Composable
 inline fun lineField(
     textStyle: TextStyle,
-    lineText: MutableState<String>) {
+    lineNumbers: LineNumbers) {
     // LineBox
     BasicTextField(
-        value = lineText.value,
+        value = lineNumbers.lineText.value,
         readOnly = true,
         onValueChange = { },
         textStyle = textStyle,
