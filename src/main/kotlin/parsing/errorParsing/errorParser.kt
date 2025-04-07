@@ -1,3 +1,6 @@
+package parsing.errorParsing
+
+import parsing.Segment
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 
@@ -119,8 +122,8 @@ enum class LineType {
          * with `script.kts`
          */
         fun replacePath(line: String): String? = when (fromLine(line)) {
-            ERROR -> line.replace(LineType.ERROR_REGEX, "script.kts$2 $3 $4")
-            EXCEPTION -> line.replace(LineType.EXCEPTION_REGEX, "$1Script$3(script.kts$5$6$7")
+            ERROR -> line.replace(ERROR_REGEX, "script.kts$2 $3 $4")
+            EXCEPTION -> line.replace(EXCEPTION_REGEX, "$1Script$3(script.kts$5$6$7")
             else -> null
         }
     }

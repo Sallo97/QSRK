@@ -21,8 +21,12 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import parsing.errorParsing.ErrorTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import parsing.syntaxParsing.SyntaxTransformation
+import scriptHandler.ScriptStatus
+import scriptHandler.executeScript
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText

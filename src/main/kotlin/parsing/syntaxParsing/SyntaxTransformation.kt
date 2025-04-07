@@ -1,3 +1,6 @@
+package parsing.syntaxParsing
+
+import parsing.Segment
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
@@ -22,8 +25,7 @@ object SyntaxTransformation : VisualTransformation {
         val result = buildAnnotatedString {
             if (rawText.isEmpty()) {
                 append(rawText)
-            }
-            else {
+            } else {
                 rawText.lines().also {
                     val lastLine = it.lastIndex
                     it.forEachIndexed { index, line ->

@@ -12,5 +12,4 @@ object MyColors {
     val windowBackground = Color.hsv(hue = 15f, saturation = 0.75f, value = 1f) // Light blue background
 
 
-
 }

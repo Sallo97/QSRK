@@ -1,3 +1,6 @@
+package parsing.errorParsing
+
+import parsing.Segment
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping

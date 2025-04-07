@@ -1,4 +1,7 @@
+package scriptHandler
+
 import androidx.compose.runtime.MutableState
+import parsing.errorParsing.isMissingCompiler
 import java.io.IOException
 
 /**
