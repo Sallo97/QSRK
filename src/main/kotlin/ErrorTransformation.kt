@@ -58,15 +58,19 @@ object ErrorTransformation : VisualTransformation {
 
                 // Parse the remaining portion of text
                 val remainderText = rawText.substring(lastIdx, rawText.length)
-                remainderText.lines().forEach { line ->
-                    ErrorParser.parseLine(line = line, startLineIdx = lastIdx).also {
-                        it.forEach { newSegment ->
-                            appendSegment(newSegment, builder = this, rawText)
-                            lastIdx = newSegment.range.last + 1
+                remainderText.lines().also { lines ->
+                    // Parse all the lines except the last one
+                    lines.take(lines.size - 1).forEach { line ->
+                        ErrorParser.parseLine(line = line, startLineIdx = lastIdx).also { newSegments ->
+                            newSegments.forEach { segment ->
+                                appendSegment(segment, this, rawText)
+                                lastIdx = segment.range.last + 1
+                            }
+                            segments.addAll(newSegments)
                         }
-                        segments.addAll(it)
                     }
                 }
+
                 if(lastIdx < rawText.length) {
                     append(rawText.substring(lastIdx))
                 }

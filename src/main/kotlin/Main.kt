@@ -71,7 +71,7 @@ fun App() {
                             textLayoutResult = it
                         },
 
-                        enabled = false,
+                        enabled = true,
                         visualTransformation = ErrorTransformation,
                         readOnly = true,
                         value = output.value,
